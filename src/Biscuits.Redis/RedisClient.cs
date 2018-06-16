@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,60 +10,66 @@ namespace Biscuits.Redis
 {
     public class RedisClient : IDisposable
     {
-        private readonly TcpClient _client;
+        private readonly RedisConnectionSettings _connectionSettings;
         private readonly Encoding _encoding;
-        private RespWriter _writer;
-        private RespReader _reader;
-        private bool _initialized;
-        private bool _disposed;
 
         public RedisClient(string hostname)
-            : this(hostname, 6379)
+            : this(new RedisConnectionSettings(hostname))
         {
         }
 
         public RedisClient(string hostname, int port)
-             : this(hostname, port, Encoding.UTF8)
+            : this(new RedisConnectionSettings(hostname, port))
         {
         }
 
         public RedisClient(string hostname, int port, Encoding encoding)
+            : this(new RedisConnectionSettings(hostname, port), encoding)
         {
-            _client = new TcpClient(hostname, port);
-            _encoding = encoding;
         }
 
-        public void Initialize()
+        public RedisClient(RedisConnectionSettings connectionSettings)
+            : this(connectionSettings, Encoding.UTF8)
         {
-            if (!_initialized)
-            {
-                _writer = new RespWriter(_client.GetStream());
-                _reader = new RespReader(_client.GetStream());
-
-                _initialized = true;
-            }
         }
 
+        public RedisClient(RedisConnectionSettings connectionSettings, Encoding encoding)
+        {
+            _connectionSettings = connectionSettings ?? throw new ArgumentNullException(nameof(connectionSettings));
+            _encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+        }
+        
         #region Connection
 
         public async Task<string> SelectAsync(int index)
         {
+            ValidateNotDisposed();
+
             if (index < 0 || index > 15)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            Initialize();
-
-            await WriteStartCommandAsync("SELECT");
-            await WriteParameterBulkStringAsync(index.ToString(CultureInfo.InvariantCulture));
-            await WriteEndCommandAsync();
-
-            return ReadSimpleStringValue();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "SELECT");
+                    await WriteParameterBulkStringAsync(writer, index.ToString(CultureInfo.InvariantCulture));
+                    await WriteEndCommandAsync(writer);
+                }
+                
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadSimpleStringValue(reader);
+                }
+            }
         }
 
         public async Task<string> EchoAsync(string message)
         {
+            ValidateNotDisposed();
+
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
@@ -76,18 +81,27 @@ namespace Biscuits.Redis
         
         public async Task<byte[]> EchoAsync(byte[] message)
         {
+            ValidateNotDisposed();
+
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "ECHO");
+                    await WriteParameterBulkStringAsync(writer, message);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("ECHO");
-            await WriteParameterBulkStringAsync(message);
-            await WriteEndCommandAsync();
-
-            return ReadBulkStringValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadBulkStringValue(reader);
+                }
+            }
         }
 
         #endregion
@@ -96,6 +110,8 @@ namespace Biscuits.Redis
 
         public async Task<string> LIndexAsync(string key, long index)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -114,6 +130,8 @@ namespace Biscuits.Redis
 
         public async Task<byte[]> LIndexAsync(byte[] key, long index)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -123,19 +141,28 @@ namespace Biscuits.Redis
             {
                 throw new ArgumentException(nameof(key));
             }
-            
-            Initialize();
 
-            await WriteStartCommandAsync("LINDEX");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(index.ToString(CultureInfo.InvariantCulture));
-            await WriteEndCommandAsync();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LINDEX");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, index.ToString(CultureInfo.InvariantCulture));
+                    await WriteEndCommandAsync(writer);
+                }
 
-            return ReadBulkStringValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadBulkStringValue(reader);
+                }
+            }
         }
 
         public async Task<long> LInsertBeforeAsync(string key, string before, string value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -160,6 +187,8 @@ namespace Biscuits.Redis
 
         public async Task<long> LInsertBeforeAsync(byte[] key, byte[] before, byte[] value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -180,20 +209,29 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(value));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LINSERT");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, "BEFORE");
+                    await WriteParameterBulkStringAsync(writer, before);
+                    await WriteParameterBulkStringAsync(writer, value);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LINSERT");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync("BEFORE");
-            await WriteParameterBulkStringAsync(before);
-            await WriteParameterBulkStringAsync(value);
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
+            }
         }
 
         public async Task<long> LInsertAfterAsync(string key, string after, string value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -218,6 +256,8 @@ namespace Biscuits.Redis
 
         public async Task<long> LInsertAfterAsync(byte[] key, byte[] after, byte[] value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -238,20 +278,29 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(value));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LINSERT");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, "AFTER");
+                    await WriteParameterBulkStringAsync(writer, after);
+                    await WriteParameterBulkStringAsync(writer, value);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LINSERT");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync("AFTER");
-            await WriteParameterBulkStringAsync(after);
-            await WriteParameterBulkStringAsync(value);
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
+            }
         }
 
         public async Task<long> LLenAsync(string key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -263,6 +312,8 @@ namespace Biscuits.Redis
 
         public async Task<long> LLenAsync(byte[] key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -273,17 +324,26 @@ namespace Biscuits.Redis
                 throw new ArgumentException(nameof(key));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LLEN");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LLEN");
-            await WriteParameterBulkStringAsync(key);
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
+            }
         }
 
         public async Task<string> LPopAsync(string key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -312,17 +372,26 @@ namespace Biscuits.Redis
                 throw new ArgumentException(nameof(key));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LPOP");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LPOP");
-            await WriteParameterBulkStringAsync(key);
-            await WriteEndCommandAsync();
-
-            return ReadBulkStringValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadBulkStringValue(reader);
+                }
+            }
         }
 
         public async Task<long> LPushAsync(string key, params string[] values)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -344,8 +413,10 @@ namespace Biscuits.Redis
             return await LPushAsync(keyBytes, valuesBytes);
         }
 
-        public async Task<long> LPushAsync(byte[] key, params byte[][] values)
+        public async Task<long> LPushAsync(byte[] key, IList<byte[]> values)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -361,12 +432,12 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (values.Length == 0)
+            if (values.Count == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(values));
             }
 
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 if (values[i] == null)
                 {
@@ -374,23 +445,32 @@ namespace Biscuits.Redis
                 }
             }
 
-            Initialize();
-
-            await WriteStartCommandAsync("LPUSH");
-            await WriteParameterBulkStringAsync(key);
-
-            for (int i = 0; i < values.Length; i++)
+            using (var connection = new RedisConnection(_connectionSettings))
             {
-                await WriteParameterBulkStringAsync(values[i]);
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LPUSH");
+                    await WriteParameterBulkStringAsync(writer, key);
+
+                    for (int i = 0; i < values.Count; i++)
+                    {
+                        await WriteParameterBulkStringAsync(writer, values[i]);
+                    }
+
+                    await WriteEndCommandAsync(writer);
+                }
+
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
             }
-
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
         }
 
         public async Task<long> LPushXAsync(string key, string value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -409,6 +489,8 @@ namespace Biscuits.Redis
 
         public async Task<long> LPushXAsync(byte[] key, byte[] value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -423,19 +505,28 @@ namespace Biscuits.Redis
             {
                 throw new ArgumentNullException(nameof(value));
             }
-            
-            Initialize();
 
-            await WriteStartCommandAsync("LPUSHX");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(value);
-            await WriteEndCommandAsync();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LPUSHX");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, value);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            return ReadIntegerValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
+            }
         }
 
         public async Task<IList<string>> LRangeAsync(string key, long start, long stop)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -457,6 +548,8 @@ namespace Biscuits.Redis
 
         public async Task<IList<byte[]>> LRangeAsync(byte[] key, long start, long stop)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -467,19 +560,28 @@ namespace Biscuits.Redis
                 throw new ArgumentException(nameof(key));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LRANGE");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, start.ToString(CultureInfo.InvariantCulture));
+                    await WriteParameterBulkStringAsync(writer, stop.ToString(CultureInfo.InvariantCulture));
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LRANGE");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(start.ToString(CultureInfo.InvariantCulture));
-            await WriteParameterBulkStringAsync(stop.ToString(CultureInfo.InvariantCulture));
-            await WriteEndCommandAsync();
-
-            return ReadArrayOfBulkStrings();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadArrayOfBulkStrings(reader);
+                }
+            }
         }
 
         public async Task<long> LRemAsync(string key, long count, string value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -498,6 +600,8 @@ namespace Biscuits.Redis
 
         public async Task<long> LRemAsync(byte[] key, long count, byte[] value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -513,19 +617,28 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(value));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LREM");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, count.ToString(CultureInfo.InvariantCulture));
+                    await WriteParameterBulkStringAsync(writer, value);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LREM");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(count.ToString(CultureInfo.InvariantCulture));
-            await WriteParameterBulkStringAsync(value);
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
+            }
         }
 
         public async Task<string> LSetAsync(string key, long index, string value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -544,6 +657,8 @@ namespace Biscuits.Redis
 
         public async Task<string> LSetAsync(byte[] key, long index, byte[] value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -559,19 +674,28 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(value));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LSET");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, index.ToString(CultureInfo.InvariantCulture));
+                    await WriteParameterBulkStringAsync(writer, value);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LSET");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(index.ToString(CultureInfo.InvariantCulture));
-            await WriteParameterBulkStringAsync(value);
-            await WriteEndCommandAsync();
-
-            return ReadSimpleStringValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadSimpleStringValue(reader);
+                }
+            }
         }
 
         public async Task<string> LTrimAsync(string key, long start, long stop)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -593,19 +717,28 @@ namespace Biscuits.Redis
                 throw new ArgumentException(nameof(key));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "LTRIM");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, start.ToString(CultureInfo.InvariantCulture));
+                    await WriteParameterBulkStringAsync(writer, stop.ToString(CultureInfo.InvariantCulture));
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("LTRIM");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(start.ToString(CultureInfo.InvariantCulture));
-            await WriteParameterBulkStringAsync(stop.ToString(CultureInfo.InvariantCulture));
-            await WriteEndCommandAsync();
-
-            return ReadSimpleStringValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadSimpleStringValue(reader);
+                }
+            }
         }
 
         public async Task<string> RPopAsync(string key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -624,6 +757,8 @@ namespace Biscuits.Redis
 
         public async Task<byte[]> RPopAsync(byte[] key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -634,17 +769,26 @@ namespace Biscuits.Redis
                 throw new ArgumentException(nameof(key));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "RPOP");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("RPOP");
-            await WriteParameterBulkStringAsync(key);
-            await WriteEndCommandAsync();
-
-            return ReadBulkStringValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadBulkStringValue(reader);
+                }
+            }
         }
 
         public async Task<long> RPushAsync(string key, params string[] values)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -666,8 +810,10 @@ namespace Biscuits.Redis
             return await RPushAsync(keyBytes, valuesBytes);
         }
         
-        public async Task<long> RPushAsync(byte[] key, params byte[][] values)
+        public async Task<long> RPushAsync(byte[] key, IList<byte[]> values)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -683,12 +829,12 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (values.Length == 0)
+            if (values.Count == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(values));
             }
 
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 if (values[i] == null)
                 {
@@ -696,23 +842,32 @@ namespace Biscuits.Redis
                 }
             }
 
-            Initialize();
-
-            await WriteStartCommandAsync("RPUSH");
-            await WriteParameterBulkStringAsync(key);
-
-            for (int i = 0; i < values.Length; i++)
+            using (var connection = new RedisConnection(_connectionSettings))
             {
-                await WriteParameterBulkStringAsync(values[i]);
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "RPUSH");
+                    await WriteParameterBulkStringAsync(writer, key);
+
+                    for (int i = 0; i < values.Count; i++)
+                    {
+                        await WriteParameterBulkStringAsync(writer, values[i]);
+                    }
+
+                    await WriteEndCommandAsync(writer);
+                }
+
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
             }
-
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
         }
 
         public async Task<long> RPushXAsync(string key, string value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -731,6 +886,8 @@ namespace Biscuits.Redis
 
         public async Task<long> RPushXAsync(byte[] key, byte[] value)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -746,18 +903,27 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(value));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "RPUSHX");
+                    await WriteParameterBulkStringAsync(writer, key);
+                    await WriteParameterBulkStringAsync(writer, value);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("RPUSHX");
-            await WriteParameterBulkStringAsync(key);
-            await WriteParameterBulkStringAsync(value);
-            await WriteEndCommandAsync();
-
-            return ReadIntegerValue();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadIntegerValue(reader);
+                }
+            }
         }
 
         public async Task<string> RPopLPushAsync(string source, string destination)
         {
+            ValidateNotDisposed();
+
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
@@ -783,6 +949,8 @@ namespace Biscuits.Redis
 
         public async Task<byte[]> RPopLPushAsync(byte[] source, byte[] destination)
         {
+            ValidateNotDisposed();
+
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
@@ -803,14 +971,41 @@ namespace Biscuits.Redis
                 throw new ArgumentException(nameof(destination));
             }
 
-            Initialize();
+            using (var connection = new RedisConnection(_connectionSettings))
+            {
+                using (var writer = new RespWriter(connection.GetStream()))
+                {
+                    await WriteStartCommandAsync(writer, "RPOPLPUSH");
+                    await WriteParameterBulkStringAsync(writer, source);
+                    await WriteParameterBulkStringAsync(writer, destination);
+                    await WriteEndCommandAsync(writer);
+                }
 
-            await WriteStartCommandAsync("RPOPLPUSH");
-            await WriteParameterBulkStringAsync(source);
-            await WriteParameterBulkStringAsync(destination);
-            await WriteEndCommandAsync();
+                using (var reader = new RespReader(connection.GetStream()))
+                {
+                    return ReadBulkStringValue(reader);
+                }
+            }
+        }
 
-            return ReadBulkStringValue();
+        #endregion
+
+        #region Pub/Sub
+
+        public async Task<RedisSubscription> SubscribeAsync(params string[] channels)
+        {
+            var subscription = new RedisSubscription(_connectionSettings, _encoding, channels);
+            await subscription.SubscribeAsync();
+
+            return subscription;
+        }
+
+        public async Task<RedisSubscription> SubscribeAsync(IList<byte[]> channels)
+        {
+            var subscription = new RedisSubscription(_connectionSettings, _encoding, channels);
+            await subscription.SubscribeAsync();
+
+            return subscription;
         }
 
         #endregion
@@ -820,80 +1015,53 @@ namespace Biscuits.Redis
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        
-        protected async Task WriteStartCommandAsync(string command)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
 
-            await _writer.WriteStartArrayAsync();
-            await _writer.WriteBulkStringAsync(command);
+        protected virtual void Dispose(bool disposing)
+        {
         }
 
-        protected async Task WriteParameterSimpleStringUnsafeAsync(string value)
+        private void ValidateNotDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            await _writer.WriteSimpleStringUnsafeAsync(value);
         }
 
-        protected async Task WriteParameterIntegerAsync(long value)
+        private static async Task WriteStartCommandAsync(RespWriter writer, string command)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            await _writer.WriteIntegerAsync(value);
+            await writer.WriteStartArrayAsync();
+            await writer.WriteBulkStringAsync(command);
         }
 
-        protected async Task WriteParameterBulkStringAsync(string value)
+        private static async Task WriteParameterSimpleStringUnsafeAsync(RespWriter writer, string value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            await _writer.WriteBulkStringAsync(value);
+            await writer.WriteSimpleStringUnsafeAsync(value);
         }
 
-        protected async Task WriteParameterBulkStringAsync(byte[] value)
+        private static async Task WriteParameterIntegerAsync(RespWriter writer, long value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            await _writer.WriteBulkStringAsync(value);
+            await writer.WriteIntegerAsync(value);
         }
 
-        protected async Task WriteEndCommandAsync()
+        private static async Task WriteParameterBulkStringAsync(RespWriter writer, string value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            await _writer.WriteEndArrayAsync();
+            await writer.WriteBulkStringAsync(value);
         }
 
-        protected IList<byte[]> ReadArrayOfBulkStrings()
+        private static async Task WriteParameterBulkStringAsync(RespWriter writer, byte[] value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
+            await writer.WriteBulkStringAsync(value);
+        }
 
-            RespDataType dataType = _reader.ReadDataType();
+        private static async Task WriteEndCommandAsync(RespWriter writer)
+        {
+            await writer.WriteEndArrayAsync();
+        }
+
+        private static IList<byte[]> ReadArrayOfBulkStrings(RespReader reader)
+        {
+            RespDataType dataType = reader.ReadDataType();
 
             if (dataType == RespDataType.Error)
             {
-                string err = _reader.ReadErrorValue();
+                string err = reader.ReadErrorValue();
                 throw new RedisErrorException(err);
             }
 
@@ -901,10 +1069,8 @@ namespace Biscuits.Redis
             {
                 throw new InvalidDataException();
             }
-
-            long length;
-
-            if (!_reader.TryReadStartArray(out length))
+            
+            if (!reader.TryReadStartArray(out long length))
             {
                 return null;
             }
@@ -913,32 +1079,27 @@ namespace Biscuits.Redis
 
             for (int i = 0; i < length; i++)
             {
-                dataType =  _reader.ReadDataType();
+                dataType = reader.ReadDataType();
 
                 if (dataType != RespDataType.BulkString)
                 {
                     throw new InvalidDataException();
                 }
 
-                byte[] value = _reader.ReadBulkStringValue();
+                byte[] value = reader.ReadBulkStringValue();
                 values.Add(value);
             }
 
             return values;
         }
 
-        protected string ReadSimpleStringValue()
+        private static string ReadSimpleStringValue(RespReader reader)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            RespDataType dataType = _reader.ReadDataType();
+            RespDataType dataType = reader.ReadDataType();
 
             if (dataType == RespDataType.Error)
             {
-                string err = _reader.ReadErrorValue();
+                string err = reader.ReadErrorValue();
                 throw new RedisErrorException(err);
             }
 
@@ -947,21 +1108,16 @@ namespace Biscuits.Redis
                 throw new InvalidDataException();
             }
 
-            return _reader.ReadSimpleStringValue();
+            return reader.ReadSimpleStringValue();
         }
 
-        protected byte[] ReadBulkStringValue()
+        private static byte[] ReadBulkStringValue(RespReader reader)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            RespDataType dataType = _reader.ReadDataType();
+            RespDataType dataType = reader.ReadDataType();
 
             if (dataType == RespDataType.Error)
             {
-                string err = _reader.ReadErrorValue();
+                string err = reader.ReadErrorValue();
                 throw new RedisErrorException(err);
             }
 
@@ -970,21 +1126,16 @@ namespace Biscuits.Redis
                 throw new InvalidDataException();
             }
 
-            return _reader.ReadBulkStringValue();
+            return reader.ReadBulkStringValue();
         }
 
-        protected long ReadIntegerValue()
+        private static long ReadIntegerValue(RespReader reader)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(RedisClient));
-            }
-
-            RespDataType dataType = _reader.ReadDataType();
+            RespDataType dataType = reader.ReadDataType();
 
             if (dataType == RespDataType.Error)
             {
-                string err = _reader.ReadErrorValue();
+                string err = reader.ReadErrorValue();
                 throw new RedisErrorException(err);
             }
 
@@ -993,22 +1144,7 @@ namespace Biscuits.Redis
                 throw new InvalidDataException();
             }
 
-            return _reader.ReadIntegerValue();
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _client.Dispose();
-            }
-
-            _disposed = true;
+            return reader.ReadIntegerValue();
         }
     }
 }

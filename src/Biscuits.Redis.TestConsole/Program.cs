@@ -67,6 +67,8 @@ namespace Biscuits.Redis.TestConsole
                 {
                     Console.WriteLine(value);
                 }
+
+                RedisSubscription subscription = await client.SubscribeAsync("test1", "test2");
             }
 
             Console.ReadLine();

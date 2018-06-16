@@ -9,7 +9,7 @@ namespace Biscuits.Redis.Resp
     public class RespReader : IDisposable
     {
         private readonly Encoding _encoding = new UTF8Encoding(false);
-        private readonly Stack<long> _ancestorCounts = new Stack<long>();
+        //private readonly Stack<long> _ancestorCounts = new Stack<long>();
         private readonly BinaryReader _reader;
         private long _currentLength = 1;
         private bool _disposed;
@@ -80,13 +80,6 @@ namespace Biscuits.Redis.Resp
             }
             
             _currentLength = length;
-
-            //if (_currentLength == 0)
-            //{
-            //    ReadState = ReadState.Value;
-            //    return true;
-            //}
-
             ReadState = ReadState.DataType;
             return true;
         }
