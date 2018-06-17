@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Biscuits.Redis.Resp
 {
-    public class RespReader : IDisposable
+    public class RespReader : IRespReader, IDisposable
     {
         private readonly Encoding _encoding = new UTF8Encoding(false);
         //private readonly Stack<long> _ancestorCounts = new Stack<long>();

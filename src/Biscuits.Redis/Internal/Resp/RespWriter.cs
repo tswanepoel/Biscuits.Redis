@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Biscuits.Redis.Resp
 {
-    public class RespWriter : IDisposable
+    public class RespWriter : IRespWriter, IDisposable
     {
         private const int DefaultBufferSize = 1024/*1KB*/;
         private readonly Encoding _encoding = new UTF8Encoding(false);
@@ -233,15 +233,15 @@ namespace Biscuits.Redis.Resp
             }
         }
 
-        public void Close()
-        {
-            WriteState = WriteState.Closed;
-        }
-
         public async Task FlushAsync()
         {
             ValidateNotDisposed();
             await _current.FlushAsync();
+        }
+
+        public void Close()
+        {
+            WriteState = WriteState.Closed;
         }
         
         public void Dispose()
