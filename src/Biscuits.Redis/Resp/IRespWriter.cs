@@ -2,7 +2,7 @@
 
 namespace Biscuits.Redis.Resp
 {
-    internal interface IRespWriter
+    public interface IRespWriter
     {
         WriteState WriteState { get; }
         Task WriteStartArrayAsync();

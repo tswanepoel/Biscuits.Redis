@@ -29,9 +29,7 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             await _current.WriteAsync('*');
 
@@ -49,9 +47,7 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState != WriteState.Array)
-            {
                 throw new InvalidOperationException();
-            }
 
             StreamWriter parent = _ancestors.Pop();
             long parentCount = _ancestorLengths.Pop();
@@ -79,9 +75,7 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             await _current.WriteAsync("*-1\r\n");
             _currentLength++;
@@ -97,14 +91,10 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             await _current.WriteAsync('+');
             await _current.WriteAsync(value);
@@ -123,14 +113,10 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             await _current.WriteAsync('-');
             await _current.WriteAsync(value);
@@ -149,9 +135,7 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             await _current.WriteAsync(':');
             await _current.WriteAsync(value.ToString(CultureInfo.InvariantCulture));
@@ -170,9 +154,7 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             await _current.WriteAsync('$');
 
@@ -201,9 +183,7 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (WriteState == WriteState.Closed)
-            {
                 throw new InvalidOperationException();
-            }
 
             await _current.WriteAsync('$');
 
@@ -252,31 +232,27 @@ namespace Biscuits.Redis.Resp
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (!_disposed)
             {
-                return;
-            }
-
-            if (disposing)
-            {
-                _current.Flush();
-
-                while (_ancestors.Count != 0)
+                if (disposing)
                 {
-                    _current.Dispose();
-                    _current = _ancestors.Pop();
-                }
-            }
+                    _current.Flush();
 
-            _disposed = true;
+                    while (_ancestors.Count != 0)
+                    {
+                        _current.Dispose();
+                        _current = _ancestors.Pop();
+                    }
+                }
+
+                _disposed = true;
+            }
         }
 
         private void ValidateNotDisposed()
         {
             if (_disposed)
-            {
                 throw new ObjectDisposedException(nameof(RespWriter));
-            }
         }
     }
 }

@@ -10,8 +10,8 @@
 
     internal class CommandResult<T>
     {
-        private readonly string _errorMessage;
-        private readonly T _result;
+        readonly string _errorMessage;
+        readonly T _result;
         
         private CommandResult(string errorMessage)
         {

@@ -1,8 +1,7 @@
 ﻿using Biscuits.Redis.Commands;
-using Biscuits.Redis.Resp;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Biscuits.Redis
@@ -16,17 +15,13 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = await LIndexAsync(keyBytes, index);
 
             if (valueBytes == null)
-            {
                 return null;
-            }
 
             return _encoding.GetString(valueBytes);
         }
@@ -36,42 +31,34 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
                 var command = new LIndex(connection.GetStream(), key, index);
-                return (await command.ExecuteAsync()).Result;
+                return await command.ExecuteAsync();
             }
         }
 
         #endregion
+
+        #region LInsertBefore
 
         public async Task<long> LInsertBeforeAsync(string key, string before, string value)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (before == null)
-            {
                 throw new ArgumentNullException(nameof(before));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] beforeBytes = _encoding.GetBytes(before);
@@ -85,62 +72,40 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (before == null)
-            {
                 throw new ArgumentNullException(nameof(before));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LINSERT");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, "BEFORE");
-                    await WriteParameterBulkStringAsync(writer, before);
-                    await WriteParameterBulkStringAsync(writer, value);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new LInsertBefore(connection.GetStream(), key, before, value);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LInsertAfter
 
         public async Task<long> LInsertAfterAsync(string key, string after, string value)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (after == null)
-            {
                 throw new ArgumentNullException(nameof(after));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] afterBytes = _encoding.GetBytes(after);
@@ -154,52 +119,34 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (after == null)
-            {
                 throw new ArgumentNullException(nameof(after));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LINSERT");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, "AFTER");
-                    await WriteParameterBulkStringAsync(writer, after);
-                    await WriteParameterBulkStringAsync(writer, value);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new LInsertAfter(connection.GetStream(), key, after, value);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LLen
 
         public async Task<long> LLenAsync(string key)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             return await LLenAsync(keyBytes);
@@ -210,47 +157,34 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LLEN");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new LLen(connection.GetStream(), key);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LPop
 
         public async Task<string> LPopAsync(string key)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = await LPopAsync(keyBytes);
 
             if (valueBytes == null)
-            {
                 return null;
-            }
 
             return _encoding.GetString(valueBytes);
         }
@@ -258,123 +192,85 @@ namespace Biscuits.Redis
         public async Task<byte[]> LPopAsync(byte[] key)
         {
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LPOP");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadBulkStringValue(reader);
-                }
+                var command = new LPop(connection.GetStream(), key);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LPush
 
         public async Task<long> LPushAsync(string key, params string[] values)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (values == null)
-            {
                 throw new ArgumentNullException(nameof(values));
-            }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            var valuesBytes = new byte[values.Length][];
+            var valuesBytes = new List<byte[]>(values.Length);
 
             for (int i = 0; i < values.Length; i++)
             {
-                valuesBytes[i] = values[i] != null ? _encoding.GetBytes(values[i]) : null;
+                if (values[i] == null)
+                    throw new ArgumentException(nameof(values));
+
+                valuesBytes.Add(_encoding.GetBytes(values[i]));
             }
 
+            byte[] keyBytes = _encoding.GetBytes(key);
             return await LPushAsync(keyBytes, valuesBytes);
         }
 
-        public async Task<long> LPushAsync(byte[] key, IList<byte[]> values)
+        public async Task<long> LPushAsync(byte[] key, ICollection<byte[]> values)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (values == null)
-            {
                 throw new ArgumentNullException(nameof(values));
-            }
 
             if (values.Count == 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(values));
-            }
+                throw new ArgumentException(nameof(values));
 
-            for (int i = 0; i < values.Count; i++)
-            {
-                if (values[i] == null)
-                {
-                    throw new ArgumentException(nameof(values));
-                }
-            }
+            if (values.Any(x => x == null))
+                throw new ArgumentException(nameof(values));
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LPUSH");
-                    await WriteParameterBulkStringAsync(writer, key);
-
-                    for (int i = 0; i < values.Count; i++)
-                    {
-                        await WriteParameterBulkStringAsync(writer, values[i]);
-                    }
-
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new LPush(connection.GetStream(), key, values);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LPushX
 
         public async Task<long> LPushXAsync(string key, string value)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = _encoding.GetBytes(value);
@@ -387,36 +283,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LPUSHX");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, value);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new LPushX(connection.GetStream(), key, value);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LRange
 
         public async Task<IList<string>> LRangeAsync(string key, long start, long stop)
         {
@@ -457,35 +341,24 @@ namespace Biscuits.Redis
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LRANGE");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, start.ToString(CultureInfo.InvariantCulture));
-                    await WriteParameterBulkStringAsync(writer, stop.ToString(CultureInfo.InvariantCulture));
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadArrayOfBulkStrings(reader);
-                }
+                var command = new LRange(connection.GetStream(), key, start, stop);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LRem
 
         public async Task<long> LRemAsync(string key, long count, string value)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = _encoding.GetBytes(value);
@@ -498,51 +371,34 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LREM");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, count.ToString(CultureInfo.InvariantCulture));
-                    await WriteParameterBulkStringAsync(writer, value);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new LRem(connection.GetStream(), key, count, value);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LSet
 
         public async Task<string> LSetAsync(string key, long index, string value)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = _encoding.GetBytes(value);
@@ -555,46 +411,31 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LSET");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, index.ToString(CultureInfo.InvariantCulture));
-                    await WriteParameterBulkStringAsync(writer, value);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadSimpleStringValue(reader);
-                }
+                var command = new LSet(connection.GetStream(), key, index, value);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region LTrim
 
         public async Task<string> LTrimAsync(string key, long start, long stop)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             return await LTrimAsync(keyBytes, start, stop);
@@ -603,49 +444,34 @@ namespace Biscuits.Redis
         public async Task<string> LTrimAsync(byte[] key, long start, long stop)
         {
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "LTRIM");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, start.ToString(CultureInfo.InvariantCulture));
-                    await WriteParameterBulkStringAsync(writer, stop.ToString(CultureInfo.InvariantCulture));
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadSimpleStringValue(reader);
-                }
+                var command = new LTrim(connection.GetStream(), key, start, stop);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region RPop
 
         public async Task<string> RPopAsync(string key)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = await RPopAsync(keyBytes);
 
             if (valueBytes == null)
-            {
                 return null;
-            }
 
             return _encoding.GetString(valueBytes);
         }
@@ -655,53 +481,43 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "RPOP");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadBulkStringValue(reader);
-                }
+                var command = new RPop(connection.GetStream(), key);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region RPush
 
         public async Task<long> RPushAsync(string key, params string[] values)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (values == null)
-            {
                 throw new ArgumentNullException(nameof(values));
-            }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            var valuesBytes = new byte[values.Length][];
+            var valuesBytes = new List<byte[]>(values.Length);
 
             for (int i = 0; i < values.Length; i++)
             {
-                valuesBytes[i] = values[i] != null ? _encoding.GetBytes(values[i]) : null;
+                if (values[i] == null)
+                    throw new ArgumentException(nameof(values));
+
+                valuesBytes.Add(_encoding.GetBytes(values[i]));
             }
 
+            byte[] keyBytes = _encoding.GetBytes(key);
             return await RPushAsync(keyBytes, valuesBytes);
         }
 
@@ -710,68 +526,40 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (values == null)
-            {
                 throw new ArgumentNullException(nameof(values));
-            }
 
             if (values.Count == 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(values));
-            }
+                throw new ArgumentException(nameof(values));
 
-            for (int i = 0; i < values.Count; i++)
-            {
-                if (values[i] == null)
-                {
-                    throw new ArgumentException(nameof(values));
-                }
-            }
+            if (values.Any(x => x == null))
+                throw new ArgumentException(nameof(values));
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "RPUSH");
-                    await WriteParameterBulkStringAsync(writer, key);
-
-                    for (int i = 0; i < values.Count; i++)
-                    {
-                        await WriteParameterBulkStringAsync(writer, values[i]);
-                    }
-
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new RPush(connection.GetStream(), key, values);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region RPushX
 
         public async Task<long> RPushXAsync(string key, string value)
         {
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] valueBytes = _encoding.GetBytes(value);
@@ -784,60 +572,41 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             if (value == null)
-            {
                 throw new ArgumentNullException(nameof(value));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "RPUSHX");
-                    await WriteParameterBulkStringAsync(writer, key);
-                    await WriteParameterBulkStringAsync(writer, value);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadIntegerValue(reader);
-                }
+                var command = new RPushX(connection.GetStream(), key, value);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
+
+        #region RPopLPush
 
         public async Task<string> RPopLPushAsync(string source, string destination)
         {
             ValidateNotDisposed();
 
             if (source == null)
-            {
                 throw new ArgumentNullException(nameof(source));
-            }
 
             if (destination == null)
-            {
                 throw new ArgumentNullException(nameof(destination));
-            }
 
             byte[] sourceBytes = _encoding.GetBytes(source);
             byte[] destinationBytes = _encoding.GetBytes(destination);
-
             byte[] valueBytes = await RPopLPushAsync(sourceBytes, destinationBytes);
 
             if (valueBytes == null)
-            {
                 return null;
-            }
 
             return _encoding.GetString(valueBytes);
         }
@@ -847,40 +616,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (source == null)
-            {
                 throw new ArgumentNullException(nameof(source));
-            }
 
             if (source.Length == 0)
-            {
                 throw new ArgumentException(nameof(source));
-            }
 
             if (destination == null)
-            {
                 throw new ArgumentNullException(nameof(destination));
-            }
 
             if (destination.Length == 0)
-            {
                 throw new ArgumentException(nameof(destination));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
-                using (var writer = new RespWriter(connection.GetStream()))
-                {
-                    await WriteStartCommandAsync(writer, "RPOPLPUSH");
-                    await WriteParameterBulkStringAsync(writer, source);
-                    await WriteParameterBulkStringAsync(writer, destination);
-                    await WriteEndCommandAsync(writer);
-                }
-
-                using (var reader = new RespReader(connection.GetStream()))
-                {
-                    return ReadBulkStringValue(reader);
-                }
+                var command = new RPopLPush(connection.GetStream(), source, destination);
+                return await command.ExecuteAsync();
             }
         }
+
+        #endregion
     }
 }

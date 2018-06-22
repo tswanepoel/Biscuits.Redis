@@ -3,27 +3,27 @@ using System.IO;
 
 namespace Biscuits.Redis
 {
-    internal abstract class BulkStringValueCommand : Command<byte[]>
+    internal abstract class SimpleStringValueCommand : Command<string>
     {
-        protected BulkStringValueCommand(Stream stream, string name)
+        protected SimpleStringValueCommand(Stream stream, string name)
             : base(stream, name)
         {
         }
         
-        protected override CommandResult<byte[]> ReadResult(IRespReader reader)
+        protected override CommandResult<string> ReadResult(IRespReader reader)
         {
             RespDataType dataType = reader.ReadDataType();
 
             if (dataType == RespDataType.Error)
             {
                 string err = reader.ReadErrorValue();
-                return CommandResult<byte[]>.Error(err);
+                return CommandResult<string>.Error(err);
             }
 
-            if (dataType != RespDataType.BulkString)
+            if (dataType != RespDataType.SimpleString)
                 throw new InvalidDataException();
 
-            byte[] value = reader.ReadBulkStringValue();
+            string value = reader.ReadSimpleStringValue();
             return CommandResult.Success(value);
         }
     }

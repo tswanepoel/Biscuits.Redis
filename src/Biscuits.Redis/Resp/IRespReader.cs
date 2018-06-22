@@ -1,6 +1,6 @@
 ﻿namespace Biscuits.Redis.Resp
 {
-    internal interface IRespReader
+    public interface IRespReader
     {
         ReadState ReadState { get; }
         RespDataType ReadDataType();
