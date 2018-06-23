@@ -5,25 +5,25 @@ using System.Threading.Tasks;
 
 namespace Biscuits.Redis.Commands
 {
-    internal sealed class RPush : IntegerValueCommand
+    internal sealed class HDel : IntegerValueCommand
     {
         readonly byte[] _key;
-        readonly IEnumerable<byte[]> _values;
+        readonly IEnumerable<byte[]> _fields;
 
-        public RPush(Stream stream, byte[] key, IEnumerable<byte[]> values)
-            : base(stream, "RPUSH")
+        public HDel(Stream stream, byte[] key, IEnumerable<byte[]> fields)
+            : base(stream, "HDEL")
         {
             _key = key;
-            _values = values;
+            _fields = fields;
         }
 
         protected override void WriteParameters(IRespWriter writer)
         {
             writer.WriteBulkString(_key);
-            
-            foreach (byte[] value in _values)
+
+            foreach (byte[] field in _fields)
             {
-                writer.WriteBulkString(value);
+                writer.WriteBulkString(field);
             }
         }
 
@@ -31,9 +31,9 @@ namespace Biscuits.Redis.Commands
         {
             await writer.WriteBulkStringAsync(_key);
 
-            foreach (byte[] value in _values)
+            foreach (byte[] field in _fields)
             {
-                await writer.WriteBulkStringAsync(value);
+                await writer.WriteBulkStringAsync(field);
             }
         }
     }

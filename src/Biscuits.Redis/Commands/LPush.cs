@@ -21,7 +21,7 @@ namespace Biscuits.Redis.Commands
         {
             writer.WriteBulkString(_key);
 
-            foreach (var value in _values)
+            foreach (byte[] value in _values)
             {
                 writer.WriteBulkString(value);
             }
@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands
         {
             await writer.WriteBulkStringAsync(_key);
 
-            foreach (var value in _values)
+            foreach (byte[] value in _values)
             {
                 await writer.WriteBulkStringAsync(value);
             }

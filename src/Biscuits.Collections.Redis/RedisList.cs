@@ -171,9 +171,7 @@ namespace Biscuits.Collections.Redis
             foreach (T element in this)
             {
                 if (_comparer.Equals(element, item))
-                {
                     return index;
-                }
 
                 index++;
             }

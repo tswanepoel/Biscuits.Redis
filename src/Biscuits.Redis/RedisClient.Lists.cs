@@ -571,9 +571,7 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<byte[]> valuesBytes = LRange(keyBytes, start, stop);
@@ -594,14 +592,10 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
@@ -615,9 +609,7 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<byte[]> valuesBytes = await LRangeAsync(keyBytes, start, stop);
@@ -638,14 +630,10 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
-            {
                 throw new ArgumentNullException(nameof(key));
-            }
 
             if (key.Length == 0)
-            {
                 throw new ArgumentException(nameof(key));
-            }
 
             using (var connection = new RedisConnection(_connectionSettings))
             {
