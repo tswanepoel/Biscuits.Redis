@@ -1,4 +1,4 @@
-﻿using Biscuits.Redis.Commands;
+﻿using Biscuits.Redis.Commands.Hashes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +60,7 @@ namespace Biscuits.Redis
             }
         }
 
-        public async Task<long> HDelasync(string key, params string[] fields)
+        public async Task<long> HDelAsync(string key, params string[] fields)
         {
             ValidateNotDisposed();
 
