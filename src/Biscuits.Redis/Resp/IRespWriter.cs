@@ -5,16 +5,14 @@ namespace Biscuits.Redis.Resp
     public interface IRespWriter
     {
         WriteState WriteState { get; }
-        Task WriteStartArrayAsync();
-        Task WriteEndArrayAsync();
-        Task WriteNullArrayAsync();
-        Task WriteSimpleStringUnsafeAsync(string value);
-        Task WriteErrorUnsafeAsync(string value);
-        Task WriteIntegerAsync(long value);
-        Task WriteBulkStringAsync(string value);
-        Task WriteBulkStringAsync(byte[] bytes);
-        Task FlushAsync();
-        void Close();
-
+        void WriteStartArray();
+        void WriteEndArray();
+        void WriteNullArray();
+        void WriteSimpleStringUnsafe(string value);
+        void WriteErrorUnsafe(string value);
+        void WriteInteger(long value);
+        void WriteBulkString(string value);
+        void WriteBulkString(byte[] bytes);
+        void Flush();
     }
 }

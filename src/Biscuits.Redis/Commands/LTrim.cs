@@ -19,7 +19,14 @@ namespace Biscuits.Redis.Commands
             _stop = stop;
         }
 
-        protected override async Task WriteParametersAsync(IRespWriter writer)
+        protected override void WriteParameters(IRespWriter writer)
+        {
+            writer.WriteBulkString(_key);
+            writer.WriteBulkString(_start.ToString(CultureInfo.InvariantCulture));
+            writer.WriteBulkString(_stop.ToString(CultureInfo.InvariantCulture));
+        }
+
+        protected override async Task WriteParametersAsync(IAsyncRespWriter writer)
         {
             await writer.WriteBulkStringAsync(_key);
             await writer.WriteBulkStringAsync(_start.ToString(CultureInfo.InvariantCulture));

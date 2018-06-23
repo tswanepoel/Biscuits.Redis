@@ -7,9 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Biscuits.Redis.TestConsole"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Biscuits.Redis", "Biscuits.Redis\Biscuits.Redis.csproj", "{0E6F79BB-17E9-4FB3-831E-0B920C4161E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Biscuits.Collections.Distributed", "Biscuits.Collections.Distributed\Biscuits.Collections.Distributed.csproj", "{C5D0EB0B-D78D-458E-BA83-A919F3938E22}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Biscuits.Collections.Remote", "Biscuits.Collections.Remote\Biscuits.Collections.Remote.csproj", "{CB4658C0-40F8-44C9-A196-56F246673CBA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Biscuits.Collections.Redis", "Biscuits.Collections.Redis\Biscuits.Collections.Redis.csproj", "{865C433F-731F-4301-A2BF-62AB72CC2980}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +23,10 @@ Global
 		{0E6F79BB-17E9-4FB3-831E-0B920C4161E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E6F79BB-17E9-4FB3-831E-0B920C4161E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E6F79BB-17E9-4FB3-831E-0B920C4161E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5D0EB0B-D78D-458E-BA83-A919F3938E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5D0EB0B-D78D-458E-BA83-A919F3938E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5D0EB0B-D78D-458E-BA83-A919F3938E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5D0EB0B-D78D-458E-BA83-A919F3938E22}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB4658C0-40F8-44C9-A196-56F246673CBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB4658C0-40F8-44C9-A196-56F246673CBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB4658C0-40F8-44C9-A196-56F246673CBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB4658C0-40F8-44C9-A196-56F246673CBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{865C433F-731F-4301-A2BF-62AB72CC2980}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{865C433F-731F-4301-A2BF-62AB72CC2980}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{865C433F-731F-4301-A2BF-62AB72CC2980}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{865C433F-731F-4301-A2BF-62AB72CC2980}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -15,6 +15,21 @@ namespace Biscuits.Redis
             _name = name;
         }
 
+        public T Execute()
+        {
+            using (var writer = new RespWriter(_stream))
+            {
+                WriteStartCommand(writer);
+                WriteParameters(writer);
+                WriteEndCommand(writer);
+            }
+
+            using (var reader = new RespReader(_stream))
+            {
+                return ReadResult(reader).Result;
+            }
+        }
+
         public async Task<T> ExecuteAsync()
         {
             using (var writer = new RespWriter(_stream))
@@ -30,18 +45,33 @@ namespace Biscuits.Redis
             }
         }
 
-        private async Task WriteStartCommandAsync(IRespWriter writer)
+        private void WriteStartCommand(IRespWriter writer)
+        {
+            writer.WriteStartArray();
+            writer.WriteBulkString(_name);
+        }
+
+        private async Task WriteStartCommandAsync(IAsyncRespWriter writer)
         {
             await writer.WriteStartArrayAsync();
             await writer.WriteBulkStringAsync(_name);
         }
 
-        protected virtual Task WriteParametersAsync(IRespWriter writer)
+        protected virtual void WriteParameters(IRespWriter writer)
+        {
+        }
+
+        protected virtual Task WriteParametersAsync(IAsyncRespWriter writer)
         {
             return Task.FromResult(0);
         }
 
-        private async Task WriteEndCommandAsync(IRespWriter writer)
+        private void WriteEndCommand(IRespWriter writer)
+        {
+            writer.WriteEndArray();
+        }
+
+        private async Task WriteEndCommandAsync(IAsyncRespWriter writer)
         {
             await writer.WriteEndArrayAsync();
         }

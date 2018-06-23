@@ -16,7 +16,13 @@ namespace Biscuits.Redis.Commands
             _destination = destination;
         }
 
-        protected override async Task WriteParametersAsync(IRespWriter writer)
+        protected override void WriteParameters(IRespWriter writer)
+        {
+            writer.WriteBulkString(_source);
+            writer.WriteBulkString(_destination);
+        }
+
+        protected override async Task WriteParametersAsync(IAsyncRespWriter writer)
         {
             await writer.WriteBulkStringAsync(_source);
             await writer.WriteBulkStringAsync(_destination);
