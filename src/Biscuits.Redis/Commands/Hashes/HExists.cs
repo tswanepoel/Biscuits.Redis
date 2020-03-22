@@ -6,8 +6,8 @@ namespace Biscuits.Redis.Commands.Hashes
 {
     internal sealed class HExists : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly byte[] _field;
+        private readonly byte[] _key;
+        private readonly byte[] _field;
 
         public HExists(Stream stream, byte[] key, byte[] field)
             : base(stream, "HEXISTS")

@@ -7,9 +7,9 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LTrim : SimpleStringValueCommand
     {
-        readonly byte[] _key;
-        readonly long _start;
-        readonly long _stop;
+        private readonly byte[] _key;
+        private readonly long _start;
+        private readonly long _stop;
 
         public LTrim(Stream stream, byte[] key, long start, long stop)
             : base(stream, "LTrim")

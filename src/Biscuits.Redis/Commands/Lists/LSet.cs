@@ -7,9 +7,9 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LSet : SimpleStringValueCommand
     {
-        readonly byte[] _key;
-        readonly long _index;
-        readonly byte[] _value;
+        private readonly byte[] _key;
+        private readonly long _index;
+        private readonly byte[] _value;
 
         public LSet(Stream stream, byte[] key, long index, byte[] value)
             : base(stream, "LSET")

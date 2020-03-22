@@ -6,8 +6,8 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LPushX : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly byte[] _value;
+        private readonly byte[] _key;
+        private readonly byte[] _value;
 
         public LPushX(Stream stream, byte[] key, byte[] value)
             : base(stream, "LPUSHX")

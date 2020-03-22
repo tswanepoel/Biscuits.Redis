@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Biscuits.Redis
+﻿namespace Biscuits.Redis
 {
     public class RedisConnectionSettings
     {

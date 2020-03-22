@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Biscuits.Redis
+namespace Biscuits.Redis.Commands
 {
     internal abstract class ArrayOfBulkStringValueCommand : Command<IList<byte[]>>
     {
@@ -22,19 +22,25 @@ namespace Biscuits.Redis
             }
 
             if (dataType != RespDataType.Array)
+            {
                 throw new InvalidDataException();
+            }
 
             if (!reader.TryReadStartArray(out long length))
+            {
                 return CommandResult<IList<byte[]>>.Success(null);
+            }
 
             var values = new List<byte[]>();
 
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 dataType = reader.ReadDataType();
 
                 if (dataType != RespDataType.BulkString)
+                {
                     throw new InvalidDataException();
+                }
 
                 byte[] value = reader.ReadBulkStringValue();
                 values.Add(value);

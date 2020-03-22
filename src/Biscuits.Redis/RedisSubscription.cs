@@ -50,7 +50,7 @@ namespace Biscuits.Redis
 
             var channelsBytes = new byte[channels.Length][];
 
-            for (int i = 0; i < channels.Length; i++)
+            for (var i = 0; i < channels.Length; i++)
             {
                 channelsBytes[i] = _encoding.GetBytes(channels[i]);
             }
@@ -80,7 +80,7 @@ namespace Biscuits.Redis
             {
                 await WriteStartCommandAsync(_writer, "SUBSCRIBE");
 
-                for (int i = 0; i < _channels.Count; i++)
+                for (var i = 0; i < _channels.Count; i++)
                 {
                     await WriteParameterBulkStringAsync(_writer, _channels[i]);
                 }
@@ -140,7 +140,7 @@ namespace Biscuits.Redis
                     throw new InvalidDataException();
                 }
 
-                if (!_reader.TryReadStartArray(out long length))
+                if (!_reader.TryReadStartArray(out _))
                 {
                     continue;
                 }
@@ -287,7 +287,7 @@ namespace Biscuits.Redis
             {
                 throw new InvalidDataException();
             }
-            
+
             if (!reader.TryReadStartArray(out long length))
             {
                 return null;
@@ -295,7 +295,7 @@ namespace Biscuits.Redis
 
             var values = new List<byte[]>();
 
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 dataType = reader.ReadDataType();
 

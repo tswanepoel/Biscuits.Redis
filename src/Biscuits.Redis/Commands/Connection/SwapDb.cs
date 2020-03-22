@@ -7,8 +7,8 @@ namespace Biscuits.Redis.Commands.Connection
 {
     internal sealed class SwapDb : SimpleStringValueCommand
     {
-        readonly int _index1;
-        readonly int _index2;
+        private readonly int _index1;
+        private readonly int _index2;
 
         public SwapDb(Stream stream, int index1, int index2)
             : base(stream, "SWAPDB")

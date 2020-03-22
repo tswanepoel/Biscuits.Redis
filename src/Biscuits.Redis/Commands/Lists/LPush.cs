@@ -7,8 +7,8 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LPush : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly IEnumerable<byte[]> _values;
+        private readonly byte[] _key;
+        private readonly IEnumerable<byte[]> _values;
 
         public LPush(Stream stream, byte[] key, IEnumerable<byte[]> values)
             : base(stream, "LPUSH")
@@ -21,7 +21,7 @@ namespace Biscuits.Redis.Commands.Lists
         {
             writer.WriteBulkString(_key);
 
-            foreach (byte[] value in _values)
+            foreach (var value in _values)
             {
                 writer.WriteBulkString(value);
             }
@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands.Lists
         {
             await writer.WriteBulkStringAsync(_key);
 
-            foreach (byte[] value in _values)
+            foreach (var value in _values)
             {
                 await writer.WriteBulkStringAsync(value);
             }

@@ -1,7 +1,7 @@
 ﻿using Biscuits.Redis.Resp;
 using System.IO;
 
-namespace Biscuits.Redis
+namespace Biscuits.Redis.Commands
 {
     internal abstract class IntegerValueCommand : Command<long>
     {
@@ -21,7 +21,9 @@ namespace Biscuits.Redis
             }
 
             if (dataType != RespDataType.Integer)
+            {
                 throw new InvalidDataException();
+            }
 
             long value = reader.ReadIntegerValue();
             return CommandResult.Success(value);

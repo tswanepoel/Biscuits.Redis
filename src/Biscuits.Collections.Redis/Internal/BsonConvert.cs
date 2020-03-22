@@ -9,46 +9,36 @@ namespace Biscuits.Collections.Redis
     {
         public static byte[] SerializeObject(object value)
         {
-            using (var stream = new MemoryStream())
-            using (var writer = new BsonDataWriter(stream))
-            {
-                var serializer = new JsonSerializer();
-                serializer.Serialize(writer, value);
+            using var stream = new MemoryStream();
+            using var writer = new BsonDataWriter(stream);
 
-                return stream.ToArray();
-            }
+            new JsonSerializer().Serialize(writer, value);
+            return stream.ToArray();
         }
 
         public static byte[] SerializeObject(object value, Type objectType)
         {
-            using (var stream = new MemoryStream())
-            using (var writer = new BsonDataWriter(stream))
-            {
-                var serializer = new JsonSerializer();
-                serializer.Serialize(writer, value, objectType);
+            using var stream = new MemoryStream();
+            using var writer = new BsonDataWriter(stream);
 
-                return stream.ToArray();
-            }
+            new JsonSerializer().Serialize(writer, value, objectType);
+            return stream.ToArray();
         }
 
         public static object DeserializeObject(byte[] value)
         {
-            using (var stream = new MemoryStream(value))
-            using (var reader = new BsonDataReader(stream))
-            {
-                var serializer = new JsonSerializer();
-                return serializer.Deserialize(reader);
-            }
+            using var stream = new MemoryStream(value);
+            using var reader = new BsonDataReader(stream);
+
+            return new JsonSerializer().Deserialize(reader);
         }
 
         public static T DeserializeObject<T>(byte[] value)
         {
-            using (var stream = new MemoryStream(value))
-            using (var reader = new BsonDataReader(stream))
-            {
-                var serializer = new JsonSerializer();
-                return serializer.Deserialize<T>(reader);
-            }
+            using var stream = new MemoryStream(value);
+            using var reader = new BsonDataReader(stream);
+
+            return new JsonSerializer().Deserialize<T>(reader);
         }
     }
 }

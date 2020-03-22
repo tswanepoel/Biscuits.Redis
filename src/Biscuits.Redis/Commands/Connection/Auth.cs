@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Connection
 {
     internal sealed class Auth : SimpleStringValueCommand
     {
-        readonly byte[] _password;
+        private readonly byte[] _password;
 
         public Auth(Stream stream, byte[] password)
             : base(stream, "AUTH")

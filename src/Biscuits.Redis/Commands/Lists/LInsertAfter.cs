@@ -6,9 +6,9 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LInsertAfter : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly byte[] _after;
-        readonly byte[] _value;
+        private readonly byte[] _key;
+        private readonly byte[] _after;
+        private readonly byte[] _value;
 
         public LInsertAfter(Stream stream, byte[] key, byte[] after, byte[] value)
             : base(stream, "LINSERT")

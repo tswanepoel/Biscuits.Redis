@@ -7,8 +7,8 @@ namespace Biscuits.Redis.Commands.Hashes
 {
     internal sealed class HDel : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly IEnumerable<byte[]> _fields;
+        private readonly byte[] _key;
+        private readonly IEnumerable<byte[]> _fields;
 
         public HDel(Stream stream, byte[] key, IEnumerable<byte[]> fields)
             : base(stream, "HDEL")
@@ -21,7 +21,7 @@ namespace Biscuits.Redis.Commands.Hashes
         {
             writer.WriteBulkString(_key);
 
-            foreach (byte[] field in _fields)
+            foreach (var field in _fields)
             {
                 writer.WriteBulkString(field);
             }
@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands.Hashes
         {
             await writer.WriteBulkStringAsync(_key);
 
-            foreach (byte[] field in _fields)
+            foreach (var field in _fields)
             {
                 await writer.WriteBulkStringAsync(field);
             }

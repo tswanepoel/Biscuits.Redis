@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LLen : IntegerValueCommand
     {
-        readonly byte[] _key;
+        private readonly byte[] _key;
 
         public LLen(Stream stream, byte[] key)
             : base(stream, "LLEN")

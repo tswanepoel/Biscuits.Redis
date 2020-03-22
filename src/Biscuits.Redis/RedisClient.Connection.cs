@@ -13,7 +13,9 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (password == null)
+            {
                 throw new ArgumentNullException(nameof(password));
+            }
 
             byte[] bytes = _encoding.GetBytes(password);
             return _encoding.GetString(Echo(bytes));
@@ -24,13 +26,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (password == null)
-                throw new ArgumentNullException(nameof(password));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new Auth(connection.GetStream(), password);
-                return command.Execute();
+                throw new ArgumentNullException(nameof(password));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Auth(connection.GetStream(), password);
+
+            return command.Execute();
         }
 
         public async Task<string> AuthAsync(string password)
@@ -38,7 +41,9 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (password == null)
+            {
                 throw new ArgumentNullException(nameof(password));
+            }
 
             byte[] bytes = _encoding.GetBytes(password);
             return await AuthAsync(bytes);
@@ -49,13 +54,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (password == null)
-                throw new ArgumentNullException(nameof(password));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new Auth(connection.GetStream(), password);
-                return await command.ExecuteAsync();
+                throw new ArgumentNullException(nameof(password));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Auth(connection.GetStream(), password);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -67,7 +73,9 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (message == null)
+            {
                 throw new ArgumentNullException(nameof(message));
+            }
 
             byte[] bytes = _encoding.GetBytes(message);
             return _encoding.GetString(Echo(bytes));
@@ -78,13 +86,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new Echo(connection.GetStream(), message);
-                return command.Execute();
+                throw new ArgumentNullException(nameof(message));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Echo(connection.GetStream(), message);
+
+            return command.Execute();
         }
 
         public async Task<string> EchoAsync(string message)
@@ -92,7 +101,9 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (message == null)
+            {
                 throw new ArgumentNullException(nameof(message));
+            }
 
             byte[] bytes = _encoding.GetBytes(message);
             return _encoding.GetString(await EchoAsync(bytes));
@@ -103,13 +114,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new Echo(connection.GetStream(), message);
-                return await command.ExecuteAsync();
+                throw new ArgumentNullException(nameof(message));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Echo(connection.GetStream(), message);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -133,11 +145,10 @@ namespace Biscuits.Redis
         {
             ValidateNotDisposed();
 
-            using (var connection = new RedisConnection(_connectionSettings))
-            {
-                var command = new Ping(connection.GetStream(), message);
-                return command.Execute();
-            }
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Ping(connection.GetStream(), message);
+
+            return command.Execute();
         }
 
         public async Task<string> PingAsync()
@@ -157,11 +168,10 @@ namespace Biscuits.Redis
         {
             ValidateNotDisposed();
 
-            using (var connection = new RedisConnection(_connectionSettings))
-            {
-                var command = new Ping(connection.GetStream(), message);
-                return await command.ExecuteAsync();
-            }
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Ping(connection.GetStream(), message);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -172,22 +182,20 @@ namespace Biscuits.Redis
         {
             ValidateNotDisposed();
 
-            using (var connection = new RedisConnection(_connectionSettings))
-            {
-                var command = new Quit(connection.GetStream());
-                return command.Execute();
-            }
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Quit(connection.GetStream());
+
+            return command.Execute();
         }
         
         public async Task<string> QuitAsync()
         {
             ValidateNotDisposed();
 
-            using (var connection = new RedisConnection(_connectionSettings))
-            {
-                var command = new Quit(connection.GetStream());
-                return await command.ExecuteAsync();
-            }
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Quit(connection.GetStream());
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -199,13 +207,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (index < 0 || index > 15)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new Select(connection.GetStream(), index);
-                return command.Execute();
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Select(connection.GetStream(), index);
+
+            return command.Execute();
         }
 
         public async Task<string> SelectAsync(int index)
@@ -213,13 +222,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (index < 0 || index > 15)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new Select(connection.GetStream(), index);
-                return await command.ExecuteAsync();
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new Select(connection.GetStream(), index);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion

@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Connection
 {
     internal sealed class Ping : SimpleStringValueCommand
     {
-        readonly byte[] _message;
+        private readonly byte[] _message;
 
         public Ping(Stream stream)
             : this(stream, null)

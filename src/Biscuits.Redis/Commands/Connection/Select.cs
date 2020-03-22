@@ -7,7 +7,7 @@ namespace Biscuits.Redis.Commands.Connection
 {
     internal sealed class Select : SimpleStringValueCommand
     {
-        readonly int _index;
+        private readonly int _index;
 
         public Select(Stream stream, int index)
             : base(stream, "SELECT")

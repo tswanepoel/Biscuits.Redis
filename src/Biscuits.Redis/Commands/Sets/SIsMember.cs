@@ -6,8 +6,8 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SIsMember : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly byte[] _member;
+        private readonly byte[] _key;
+        private readonly byte[] _member;
 
         public SIsMember(Stream stream, byte[] key, byte[] member)
             : base(stream, "SISMEMBER")

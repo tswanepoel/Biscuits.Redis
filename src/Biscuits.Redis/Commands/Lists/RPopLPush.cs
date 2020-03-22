@@ -6,8 +6,8 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class RPopLPush : BulkStringValueCommand
     {
-        readonly byte[] _source;
-        readonly byte[] _destination;
+        private readonly byte[] _source;
+        private readonly byte[] _destination;
 
         public RPopLPush(Stream stream, byte[] source, byte[] destination)
             : base(stream, "RPOPLPUSH")

@@ -6,8 +6,8 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SPop : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly long? _count;
+        private readonly byte[] _key;
+        private readonly long? _count;
 
         public SPop(Stream stream, byte[] key)
             : this(stream, key, null)

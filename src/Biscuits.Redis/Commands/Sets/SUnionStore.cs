@@ -7,8 +7,8 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SUnionStore : ArrayOfBulkStringValueCommand
     {
-        readonly byte[] _destination;
-        readonly IEnumerable<byte[]> _keys;
+        private readonly byte[] _destination;
+        private readonly IEnumerable<byte[]> _keys;
 
         public SUnionStore(Stream stream, byte[] destination, IEnumerable<byte[]> keys)
             : base(stream, "SUNIONSTORE")
@@ -21,7 +21,7 @@ namespace Biscuits.Redis.Commands.Sets
         {
             writer.WriteBulkString(_destination);
 
-            foreach (byte[] key in _keys)
+            foreach (var key in _keys)
             {
                 writer.WriteBulkString(key);
             }
@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands.Sets
         {
            await  writer.WriteBulkStringAsync(_destination);
 
-            foreach (byte[] key in _keys)
+            foreach (var key in _keys)
             {
                 await writer.WriteBulkStringAsync(key);
             }

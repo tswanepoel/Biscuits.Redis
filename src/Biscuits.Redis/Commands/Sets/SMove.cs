@@ -6,9 +6,9 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SMove : ArrayOfBulkStringValueCommand
     {
-        readonly byte[] _source;
-        readonly byte[] _destination;
-        readonly byte[] _member;
+        private readonly byte[] _source;
+        private readonly byte[] _destination;
+        private readonly byte[] _member;
 
         public SMove(Stream stream, byte[] source, byte[] destination, byte[] member)
             : base(stream, "SMOVE")

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -26,7 +25,9 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (ReadState != ReadState.Initial && ReadState != ReadState.DataType)
+            {
                 throw new InvalidOperationException();
+            }
 
             char ch = _reader.ReadChar();
 
@@ -60,9 +61,11 @@ namespace Biscuits.Redis.Resp
         public bool TryReadStartArray(out long length)
         {
             ValidateNotDisposed();
-            
+
             if (ReadState != ReadState.Array)
+            {
                 throw new InvalidOperationException();
+            }
 
             string countString = ReadSimpleStringValueCore();
             length = long.Parse(countString, CultureInfo.InvariantCulture);
@@ -85,10 +88,14 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (ReadState != ReadState.Value)
+            {
                 throw new InvalidOperationException();
+            }
 
             if (_currentLength > 0)
+            {
                 throw new InvalidOperationException();
+            }
 
             _currentLength--;
             ReadState = ReadState.DataType;
@@ -99,7 +106,9 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (ReadState == ReadState.Closed)
+            {
                 throw new InvalidOperationException();
+            }
 
             string value = ReadSimpleStringValueCore();
             _currentLength--;
@@ -113,7 +122,9 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (ReadState == ReadState.Closed)
+            {
                 throw new InvalidOperationException();
+            }
 
             string value = ReadSimpleStringValueCore();
             _currentLength--;
@@ -127,7 +138,9 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (ReadState == ReadState.Closed)
+            {
                 throw new InvalidOperationException();
+            }
 
             string lengthString = ReadSimpleStringValueCore();
             long length = long.Parse(lengthString, CultureInfo.InvariantCulture);
@@ -139,7 +152,9 @@ namespace Biscuits.Redis.Resp
             }
 
             if (length > int.MaxValue)
+            {
                 throw new NotSupportedException();
+            }
 
             byte[] bytes = _reader.ReadBytes((int)length);
             _reader.ReadChar();
@@ -155,7 +170,9 @@ namespace Biscuits.Redis.Resp
             ValidateNotDisposed();
 
             if (ReadState == ReadState.Closed)
+            {
                 throw new InvalidOperationException();
+            }
 
             string valueString = ReadSimpleStringValueCore();
             long value = long.Parse(valueString, CultureInfo.InvariantCulture);
@@ -192,7 +209,9 @@ namespace Biscuits.Redis.Resp
         private void ValidateNotDisposed()
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException(nameof(RespReader));
+            }
         }
 
         private string ReadSimpleStringValueCore()

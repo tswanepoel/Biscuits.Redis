@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SMembers : ArrayOfBulkStringValueCommand
     {
-        readonly byte[] _key;
+        private readonly byte[] _key;
 
         public SMembers(Stream stream, byte[] key)
             : base(stream, "SMEMBERS")

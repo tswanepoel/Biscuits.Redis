@@ -7,9 +7,9 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class LRem : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly long _count;
-        readonly byte[] _value;
+        private readonly byte[] _key;
+        private readonly long _count;
+        private readonly byte[] _value;
 
         public LRem(Stream stream, byte[] key, long count, byte[] value)
             : base(stream, "LREM")

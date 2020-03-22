@@ -1,7 +1,7 @@
 ﻿using Biscuits.Redis.Resp;
 using System.IO;
 
-namespace Biscuits.Redis
+namespace Biscuits.Redis.Commands
 {
     internal abstract class BulkStringValueCommand : Command<byte[]>
     {
@@ -21,7 +21,9 @@ namespace Biscuits.Redis
             }
 
             if (dataType != RespDataType.BulkString)
+            {
                 throw new InvalidDataException();
+            }
 
             byte[] value = reader.ReadBulkStringValue();
             return CommandResult.Success(value);

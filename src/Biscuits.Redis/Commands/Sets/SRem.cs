@@ -7,8 +7,8 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SRem : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly IEnumerable<byte[]> _members;
+        private readonly byte[] _key;
+        private readonly IEnumerable<byte[]> _members;
 
         public SRem(Stream stream, byte[] key, IEnumerable<byte[]> members)
             : base(stream, "SREM")
@@ -21,7 +21,7 @@ namespace Biscuits.Redis.Commands.Sets
         {
             writer.WriteBulkString(_key);
 
-            foreach (byte[] member in _members)
+            foreach (var member in _members)
             {
                 writer.WriteBulkString(member);
             }
@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands.Sets
         {
             await writer.WriteBulkStringAsync(_key);
 
-            foreach (byte[] member in _members)
+            foreach (var member in _members)
             {
                 await writer.WriteBulkStringAsync(member);
             }

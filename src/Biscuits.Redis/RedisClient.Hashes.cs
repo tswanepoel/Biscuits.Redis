@@ -15,17 +15,23 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (fields == null)
+            {
                 throw new ArgumentNullException(nameof(fields));
+            }
 
             var fieldsBytes = new List<byte[]>(fields.Length);
 
-            for (int i = 0; i < fields.Length; i++)
+            for (var i = 0; i < fields.Length; i++)
             {
                 if (fields[i] == null)
+                {
                     throw new ArgumentException(nameof(fields));
+                }
 
                 fieldsBytes.Add(_encoding.GetBytes(fields[i]));
             }
@@ -39,25 +45,34 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (fields == null)
+            {
                 throw new ArgumentNullException(nameof(fields));
+            }
 
             if (fields.Count == 0)
+            {
                 throw new ArgumentException(nameof(fields));
+            }
 
             if (fields.Any(x => x == null))
-                throw new ArgumentException(nameof(fields));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HDel(connection.GetStream(), key, fields);
-                return command.Execute();
+                throw new ArgumentException(nameof(fields));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HDel(connection.GetStream(), key, fields);
+
+            return command.Execute();
         }
 
         public async Task<long> HDelAsync(string key, params string[] fields)
@@ -65,17 +80,23 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (fields == null)
+            {
                 throw new ArgumentNullException(nameof(fields));
+            }
 
             var fieldsBytes = new List<byte[]>(fields.Length);
 
-            for (int i = 0; i < fields.Length; i++)
+            for (var i = 0; i < fields.Length; i++)
             {
                 if (fields[i] == null)
+                {
                     throw new ArgumentException(nameof(fields));
+                }
 
                 fieldsBytes.Add(_encoding.GetBytes(fields[i]));
             }
@@ -89,25 +110,34 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (values == null)
+            {
                 throw new ArgumentNullException(nameof(values));
+            }
 
             if (values.Count == 0)
+            {
                 throw new ArgumentException(nameof(values));
+            }
 
             if (values.Any(x => x == null))
-                throw new ArgumentException(nameof(values));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HDel(connection.GetStream(), key, values);
-                return await command.ExecuteAsync();
+                throw new ArgumentException(nameof(values));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HDel(connection.GetStream(), key, values);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -119,10 +149,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
@@ -135,19 +169,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HExists(connection.GetStream(), key, field);
-                return command.Execute();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HExists(connection.GetStream(), key, field);
+
+            return command.Execute();
         }
 
         public async Task<long> HExistsAsync(string key, string field)
@@ -155,10 +194,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
@@ -171,19 +214,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HExists(connection.GetStream(), key, field);
-                return await command.ExecuteAsync();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HExists(connection.GetStream(), key, field);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -195,17 +243,23 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
             byte[] valueBytes = HGet(keyBytes, fieldBytes);
 
             if (valueBytes == null)
+            {
                 return null;
+            }
 
             return _encoding.GetString(valueBytes);
         }
@@ -215,19 +269,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HGet(connection.GetStream(), key, field);
-                return command.Execute();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HGet(connection.GetStream(), key, field);
+
+            return command.Execute();
         }
 
         public async Task<string> HGetAsync(string key, string field)
@@ -235,17 +294,23 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
             byte[] valueBytes = await HGetAsync(keyBytes, fieldBytes);
 
             if (valueBytes == null)
+            {
                 return null;
+            }
 
             return _encoding.GetString(valueBytes);
         }
@@ -255,19 +320,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HGet(connection.GetStream(), key, field);
-                return await command.ExecuteAsync();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HGet(connection.GetStream(), key, field);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -279,14 +349,16 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<KeyValuePair<byte[], byte[]>> fieldValuePairsBytes = HGetAll(keyBytes);
 
             var fieldValuePairs = new List<KeyValuePair<string, string>>(fieldValuePairsBytes.Count);
 
-            for (int i = 0; i < fieldValuePairsBytes.Count; i++)
+            for (var i = 0; i < fieldValuePairsBytes.Count; i++)
             {
                 string field = _encoding.GetString(fieldValuePairsBytes[i].Key);
                 string value = _encoding.GetString(fieldValuePairsBytes[i].Value);
@@ -302,10 +374,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             IList<byte[]> fieldsAndValues;
 
@@ -317,7 +393,7 @@ namespace Biscuits.Redis
 
             var fieldValuePairs = new List<KeyValuePair<byte[], byte[]>>(fieldsAndValues.Count / 2);
 
-            for (int i = 0; i < fieldsAndValues.Count; i += 2)
+            for (var i = 0; i < fieldsAndValues.Count; i += 2)
             {
                 fieldValuePairs.Add(new KeyValuePair<byte[], byte[]>(fieldsAndValues[i], fieldsAndValues[i + 1]));
             }
@@ -330,14 +406,16 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<KeyValuePair<byte[], byte[]>> fieldValuePairsBytes = await HGetAllAsync(keyBytes);
 
             var fieldValuePairs = new List<KeyValuePair<string, string>>(fieldValuePairsBytes.Count);
 
-            for (int i = 0; i < fieldValuePairsBytes.Count; i++)
+            for (var i = 0; i < fieldValuePairsBytes.Count; i++)
             {
                 string field = _encoding.GetString(fieldValuePairsBytes[i].Key);
                 string value = _encoding.GetString(fieldValuePairsBytes[i].Value);
@@ -353,10 +431,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             IList<byte[]> fieldsAndValues;
 
@@ -368,13 +450,107 @@ namespace Biscuits.Redis
 
             var fieldValuePairs = new List<KeyValuePair<byte[], byte[]>>(fieldsAndValues.Count / 2);
 
-            for (int i = 0; i < fieldsAndValues.Count; i += 2)
+            for (var i = 0; i < fieldsAndValues.Count; i += 2)
             {
                 var fieldValuePair = new KeyValuePair<byte[], byte[]>(fieldsAndValues[i], fieldsAndValues[i + 1]);
                 fieldValuePairs.Add(fieldValuePair);
             }
 
             return fieldValuePairs;
+        }
+
+        #endregion
+
+        #region HIncrBy
+
+        public long HIncrBy(string key, string field, long value)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
+            byte[] keyBytes = _encoding.GetBytes(key);
+            byte[] fieldBytes = _encoding.GetBytes(field);
+
+            return HIncrBy(keyBytes, fieldBytes, value);
+        }
+
+        public long HIncrBy(byte[] key, byte[] field, long value)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (key.Length == 0)
+            {
+                throw new ArgumentException(nameof(key));
+            }
+
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HIncrBy(connection.GetStream(), key, field, value);
+
+            return command.Execute();
+        }
+
+        public async Task<long> HIncrByAsync(string key, string field, long value)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
+            byte[] keyBytes = _encoding.GetBytes(key);
+            byte[] fieldBytes = _encoding.GetBytes(field);
+
+            return await HIncrByAsync(keyBytes, fieldBytes, value);
+        }
+
+        public async Task<long> HIncrByAsync(byte[] key, byte[] field, long value)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            
+            if (key.Length == 0)
+            {
+                throw new ArgumentException(nameof(key));
+            }
+
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HIncrBy(connection.GetStream(), key, field, value);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -386,14 +562,16 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<byte[]> fieldsBytes = HKeys(keyBytes);
 
             var fields = new List<string>(fieldsBytes.Count);
 
-            for (int i = 0; i < fieldsBytes.Count; i++)
+            for (var i = 0; i < fieldsBytes.Count; i++)
             {
                 string field = _encoding.GetString(fieldsBytes[i]);
                 fields.Add(field);
@@ -407,16 +585,19 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
-                throw new ArgumentException(nameof(key));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HKeys(connection.GetStream(), key);
-                return command.Execute();
+                throw new ArgumentException(nameof(key));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HKeys(connection.GetStream(), key);
+
+            return command.Execute();
         }
 
         public async Task<IList<string>> HKeysAsync(string key)
@@ -424,14 +605,16 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<byte[]> fieldsBytes = await HKeysAsync(keyBytes);
 
             var fields = new List<string>(fieldsBytes.Count);
 
-            for (int i = 0; i < fieldsBytes.Count; i++)
+            for (var i = 0; i < fieldsBytes.Count; i++)
             {
                 string field = _encoding.GetString(fieldsBytes[i]);
                 fields.Add(field);
@@ -445,16 +628,19 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
-                throw new ArgumentException(nameof(key));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HKeys(connection.GetStream(), key);
-                return await command.ExecuteAsync();
+                throw new ArgumentException(nameof(key));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HKeys(connection.GetStream(), key);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -466,7 +652,9 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             return HLen(keyBytes);
@@ -477,16 +665,19 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
-                throw new ArgumentException(nameof(key));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HLen(connection.GetStream(), key);
-                return command.Execute();
+                throw new ArgumentException(nameof(key));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HLen(connection.GetStream(), key);
+
+            return command.Execute();
         }
 
         public async Task<long> HLenAsync(string key)
@@ -494,7 +685,9 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             return await HLenAsync(keyBytes);
@@ -505,16 +698,19 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
-                throw new ArgumentException(nameof(key));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HLen(connection.GetStream(), key);
-                return await command.ExecuteAsync();
+                throw new ArgumentException(nameof(key));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HLen(connection.GetStream(), key);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -524,16 +720,20 @@ namespace Biscuits.Redis
         public string HMSet(string key, ICollection<KeyValuePair<string, string>> fieldValuePairs)
         {
             ValidateNotDisposed();
-            
+
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (fieldValuePairs == null)
+            {
                 throw new ArgumentNullException(nameof(fieldValuePairs));
+            }
 
             var fieldValuePairsBytes = new List<KeyValuePair<byte[], byte[]>>(fieldValuePairs.Count);
 
-            foreach (KeyValuePair<string, string> fieldValuePair in fieldValuePairs)
+            foreach (var fieldValuePair in fieldValuePairs)
             {
                 byte[] fieldBytes = _encoding.GetBytes(fieldValuePair.Key);
                 byte[] valueBytes = fieldValuePair.Value != null ? _encoding.GetBytes(fieldValuePair.Value) : null;
@@ -551,27 +751,32 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (fieldValuePairs == null)
+            {
                 throw new ArgumentNullException(nameof(fieldValuePairs));
+            }
 
             var fieldsAndValues = new List<byte[]>(fieldValuePairs.Count * 2);
 
-            foreach (KeyValuePair<byte[], byte[]> fieldValuePair in fieldValuePairs)
+            foreach (var fieldValuePair in fieldValuePairs)
             {
                 fieldsAndValues.Add(fieldValuePair.Key);
                 fieldsAndValues.Add(fieldValuePair.Value);
             }
 
-            using (var connection = new RedisConnection(_connectionSettings))
-            {
-                var command = new HMSet(connection.GetStream(), key, fieldsAndValues);
-                return command.Execute();
-            }
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HMSet(connection.GetStream(), key, fieldsAndValues);
+
+            return command.Execute();
         }
 
         public async Task<string> HMSetAsync(string key, ICollection<KeyValuePair<string, string>> fieldValuePairs)
@@ -579,14 +784,18 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (fieldValuePairs == null)
+            {
                 throw new ArgumentNullException(nameof(fieldValuePairs));
+            }
 
             var fieldValuePairsBytes = new List<KeyValuePair<byte[], byte[]>>(fieldValuePairs.Count);
 
-            foreach (KeyValuePair<string, string> fieldValuePair in fieldValuePairs)
+            foreach (var fieldValuePair in fieldValuePairs)
             {
                 byte[] fieldBytes = _encoding.GetBytes(fieldValuePair.Key);
                 byte[] valueBytes = fieldValuePair.Value != null ? _encoding.GetBytes(fieldValuePair.Value) : null;
@@ -604,27 +813,32 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (fieldValuePairs == null)
+            {
                 throw new ArgumentNullException(nameof(fieldValuePairs));
+            }
 
             var fieldsAndValues = new List<byte[]>(fieldValuePairs.Count * 2);
 
-            foreach (KeyValuePair<byte[], byte[]> fieldValuePair in fieldValuePairs)
+            foreach (var fieldValuePair in fieldValuePairs)
             {
                 fieldsAndValues.Add(fieldValuePair.Key);
                 fieldsAndValues.Add(fieldValuePair.Value);
             }
 
-            using (var connection = new RedisConnection(_connectionSettings))
-            {
-                var command = new HMSet(connection.GetStream(), key, fieldsAndValues);
-                return await command.ExecuteAsync();
-            }
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HMSet(connection.GetStream(), key, fieldsAndValues);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -636,10 +850,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
@@ -653,19 +871,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HSet(connection.GetStream(), key, field, value);
-                return command.Execute();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HSet(connection.GetStream(), key, field, value);
+
+            return command.Execute();
         }
 
         public async Task<long> HSetAsync(string key, string field, string value)
@@ -673,10 +896,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
@@ -690,19 +917,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HSet(connection.GetStream(), key, field, value);
-                return await command.ExecuteAsync();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HSet(connection.GetStream(), key, field, value);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -714,10 +946,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
@@ -731,19 +967,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HSetNX(connection.GetStream(), key, field, value);
-                return command.Execute();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HSetNX(connection.GetStream(), key, field, value);
+
+            return command.Execute();
         }
 
         public async Task<long> HSetNXAsync(string key, string field, string value)
@@ -751,10 +992,14 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (field == null)
+            {
                 throw new ArgumentNullException(nameof(field));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             byte[] fieldBytes = _encoding.GetBytes(field);
@@ -768,19 +1013,24 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
+            {
                 throw new ArgumentException(nameof(key));
+            }
 
             if (field == null)
-                throw new ArgumentNullException(nameof(field));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HSetNX(connection.GetStream(), key, field, value);
-                return await command.ExecuteAsync();
+                throw new ArgumentNullException(nameof(field));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HSetNX(connection.GetStream(), key, field, value);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion
@@ -792,14 +1042,16 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<byte[]> valuesBytes = HVals(keyBytes);
 
             var values = new List<string>(valuesBytes.Count);
 
-            for (int i = 0; i < valuesBytes.Count; i++)
+            for (var i = 0; i < valuesBytes.Count; i++)
             {
                 string value = _encoding.GetString(valuesBytes[i]);
                 values.Add(value);
@@ -813,16 +1065,19 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
-                throw new ArgumentException(nameof(key));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HVals(connection.GetStream(), key);
-                return command.Execute();
+                throw new ArgumentException(nameof(key));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HVals(connection.GetStream(), key);
+
+            return command.Execute();
         }
 
         public async Task<IList<string>> HValsAsync(string key)
@@ -830,14 +1085,16 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] keyBytes = _encoding.GetBytes(key);
             IList<byte[]> valuesBytes = await HValsAsync(keyBytes);
 
             var values = new List<string>(valuesBytes.Count);
 
-            for (int i = 0; i < valuesBytes.Count; i++)
+            for (var i = 0; i < valuesBytes.Count; i++)
             {
                 string value = _encoding.GetString(valuesBytes[i]);
                 values.Add(value);
@@ -851,16 +1108,19 @@ namespace Biscuits.Redis
             ValidateNotDisposed();
 
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (key.Length == 0)
-                throw new ArgumentException(nameof(key));
-
-            using (var connection = new RedisConnection(_connectionSettings))
             {
-                var command = new HVals(connection.GetStream(), key);
-                return await command.ExecuteAsync();
+                throw new ArgumentException(nameof(key));
             }
+
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new HVals(connection.GetStream(), key);
+
+            return await command.ExecuteAsync();
         }
 
         #endregion

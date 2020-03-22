@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Connection
 {
     internal sealed class Echo : BulkStringValueCommand
     {
-        readonly byte[] _message;
+        private readonly byte[] _message;
 
         public Echo(Stream stream, byte[] message)
             : base(stream, "ECHO")

@@ -2,12 +2,12 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Biscuits.Redis
+namespace Biscuits.Redis.Commands
 {
     internal abstract class Command<T>
     {
-        readonly Stream _stream;
-        readonly string _name;
+        private readonly Stream _stream;
+        private readonly string _name;
 
         protected Command(Stream stream, string name)
         {
@@ -24,10 +24,8 @@ namespace Biscuits.Redis
                 WriteEndCommand(writer);
             }
 
-            using (var reader = new RespReader(_stream))
-            {
-                return ReadResult(reader).Result;
-            }
+            using var reader = new RespReader(_stream);
+            return ReadResult(reader).Result;
         }
 
         public async Task<T> ExecuteAsync()
@@ -39,10 +37,8 @@ namespace Biscuits.Redis
                 await WriteEndCommandAsync(writer);
             }
 
-            using (var reader = new RespReader(_stream))
-            {
-                return ReadResult(reader).Result;
-            }
+            using var reader = new RespReader(_stream);
+            return ReadResult(reader).Result;
         }
 
         private void WriteStartCommand(IRespWriter writer)

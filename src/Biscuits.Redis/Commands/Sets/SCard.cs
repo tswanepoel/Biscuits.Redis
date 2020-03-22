@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SCard : IntegerValueCommand
     {
-        readonly byte[] _key;
+        private readonly byte[] _key;
 
         public SCard(Stream stream, byte[] key)
             : base(stream, "SCARD")

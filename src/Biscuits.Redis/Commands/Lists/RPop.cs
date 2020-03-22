@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Lists
 {
     internal sealed class RPop : BulkStringValueCommand
     {
-        readonly byte[] _key;
+        private readonly byte[] _key;
 
         public RPop(Stream stream, byte[] key)
             : base(stream, "RPOP")

@@ -6,9 +6,9 @@ namespace Biscuits.Redis.Commands.Hashes
 {
     internal sealed class HSet : IntegerValueCommand
     {
-        readonly byte[] _key;
-        readonly byte[] _field;
-        readonly byte[] _value;
+        private readonly byte[] _key;
+        private readonly byte[] _field;
+        private readonly byte[] _value;
 
         public HSet(Stream stream, byte[] key, byte[] field, byte[] value)
             : base(stream, "HSET")

@@ -9,9 +9,9 @@ namespace Biscuits.Collections.Redis
 {
     public class RedisDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
     {
-        readonly RedisClient _client;
-        readonly byte[] _key;
-        readonly IEqualityComparer<TValue> _valueComparer;
+        private readonly RedisClient _client;
+        private readonly byte[] _key;
+        private readonly IEqualityComparer<TValue> _valueComparer;
 
         public RedisDictionary(RedisClient client, byte[] key)
             : this(client, key, EqualityComparer<TValue>.Default)
@@ -27,14 +27,16 @@ namespace Biscuits.Collections.Redis
 
         public TValue this[TKey key]
         {
-            get { return GetValue(key); }
-            set { AddOrSetValue(key, value); }
+            get => GetValue(key);
+            set => AddOrSetValue(key, value);
         }
 
         public TValue GetValue(TKey key)
         {
             if (TryGetValue(key, out TValue value))
+            {
                 return value;
+            }
 
             throw new KeyNotFoundException("The given key was not present in the dictionary.");
         }
@@ -44,7 +46,9 @@ namespace Biscuits.Collections.Redis
             (bool success, TValue value) = await TryGetValueAsync(key);
 
             if (success)
+            {
                 return value;
+            }
 
             throw new KeyNotFoundException("The given key was not present in the dictionary.");
         }
@@ -68,7 +72,9 @@ namespace Biscuits.Collections.Redis
         public void AddOrSetValue(ICollection<KeyValuePair<TKey, TValue>> items)
         {
             if (items == null)
+            {
                 throw new ArgumentNullException(nameof(items));
+            }
 
             var fieldValuePairs = new List<KeyValuePair<byte[], byte[]>>(items.Count);
 
@@ -86,7 +92,9 @@ namespace Biscuits.Collections.Redis
         public async Task AddOrSetValueAsync(ICollection<KeyValuePair<TKey, TValue>> items)
         {
             if (items == null)
+            {
                 throw new ArgumentNullException(nameof(items));
+            }
 
             var fieldValuePairs = new List<KeyValuePair<byte[], byte[]>>(items.Count);
 
@@ -101,32 +109,20 @@ namespace Biscuits.Collections.Redis
             await _client.HMSetAsync(_key, fieldValuePairs);
         }
 
-        public ICollection<TKey> Keys
-        {
-            get { return GetKeys(); }
-        }
+        public ICollection<TKey> Keys { get => GetKeys(); }
 
-        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys
-        {
-            get { return GetKeys(); }
-        }
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys { get => GetKeys(); }
 
-        public ICollection<TValue> Values
-        {
-            get { return GetValues(); }
-        }
+        public ICollection<TValue> Values { get => GetValues(); }
 
-        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values
-        {
-            get { return GetValues(); }
-        }
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values { get => GetValues(); }
 
         public ICollection<TKey> GetKeys()
         {
             IList<byte[]> fieldsBytes = _client.HKeys(_key);
             var fields = new TKey[fieldsBytes.Count];
 
-            for (int i = 0; i < fieldsBytes.Count; i++)
+            for (var i = 0; i < fieldsBytes.Count; i++)
             {
                 fields[i] = BsonConvert.DeserializeObject<TKey>(fieldsBytes[i]);
             }
@@ -139,7 +135,7 @@ namespace Biscuits.Collections.Redis
             IList<byte[]> fieldsBytes = await _client.HKeysAsync(_key);
             var fields = new TKey[fieldsBytes.Count];
 
-            for (int i = 0; i < fieldsBytes.Count; i++)
+            for (var i = 0; i < fieldsBytes.Count; i++)
             {
                 fields[i] = BsonConvert.DeserializeObject<TKey>(fieldsBytes[i]);
             }
@@ -152,7 +148,7 @@ namespace Biscuits.Collections.Redis
             IList<byte[]> valuesBytes = _client.HVals(_key);
             var values = new TValue[valuesBytes.Count];
 
-            for (int i = 0; i < valuesBytes.Count; i++)
+            for (var i = 0; i < valuesBytes.Count; i++)
             {
                 values[i] = BsonConvert.DeserializeObject<TValue>(valuesBytes[i]);
             }
@@ -165,7 +161,7 @@ namespace Biscuits.Collections.Redis
             IList<byte[]> valuesBytes = await _client.HValsAsync(_key);
             var values = new TValue[valuesBytes.Count];
 
-            for (int i = 0; i < valuesBytes.Count; i++)
+            for (var i = 0; i < valuesBytes.Count; i++)
             {
                 values[i] = BsonConvert.DeserializeObject<TValue>(valuesBytes[i]);
             }
@@ -173,10 +169,7 @@ namespace Biscuits.Collections.Redis
             return values;
         }
 
-        public int Count
-        {
-            get { return (int)GetCount(); }
-        }
+        public int Count { get => (int)GetCount(); }
 
         public long GetCount()
         {
@@ -188,18 +181,19 @@ namespace Biscuits.Collections.Redis
             return await _client.HLenAsync(_key);
         }
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
-
+        public bool IsReadOnly { get => false; }
+        
         public void Add(TKey key, TValue value)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (ContainsKey(key))
+            {
                 throw new ArgumentException("An item with the same key has already been added.");
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             byte[] valueBytes = value != null ? BsonConvert.SerializeObject(value) : null;
@@ -210,10 +204,14 @@ namespace Biscuits.Collections.Redis
         public async Task AddAsync(TKey key, TValue value)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             if (await ContainsKeyAsync(key))
+            {
                 throw new ArgumentException("An item with the same key has already been added.");
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             byte[] valueBytes = value != null ? BsonConvert.SerializeObject(value) : null;
@@ -255,7 +253,9 @@ namespace Biscuits.Collections.Redis
         public bool ContainsKey(TKey key)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             return _client.HExists(_key, fieldBytes) != 0L;
@@ -264,7 +264,9 @@ namespace Biscuits.Collections.Redis
         public async Task<bool> ContainsKeyAsync(TKey key)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             return await _client.HExistsAsync(_key, fieldBytes) != 0L;
@@ -300,7 +302,7 @@ namespace Biscuits.Collections.Redis
             IList<KeyValuePair<byte[], byte[]>> fieldValuePairs = _client.HGetAll(_key);
             var items = new KeyValuePair<TKey, TValue>[fieldValuePairs.Count];
 
-            for (int i = 0; i < fieldValuePairs.Count; i++)
+            for (var i = 0; i < fieldValuePairs.Count; i++)
             {
                 TKey key = BsonConvert.DeserializeObject<TKey>(fieldValuePairs[i].Key);
                 TValue value = BsonConvert.DeserializeObject<TValue>(fieldValuePairs[i].Value);
@@ -316,7 +318,7 @@ namespace Biscuits.Collections.Redis
             IList<KeyValuePair<byte[], byte[]>> fieldValuePairs = await _client.HGetAllAsync(_key);
             var items = new KeyValuePair<TKey, TValue>[fieldValuePairs.Count];
 
-            for (int i = 0; i < fieldValuePairs.Count; i++)
+            for (var i = 0; i < fieldValuePairs.Count; i++)
             {
                 TKey key = BsonConvert.DeserializeObject<TKey>(fieldValuePairs[i].Key);
                 TValue value = BsonConvert.DeserializeObject<TValue>(fieldValuePairs[i].Value);
@@ -329,7 +331,7 @@ namespace Biscuits.Collections.Redis
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            KeyValuePair<TKey, TValue> Convert(KeyValuePair<byte[], byte[]> fieldValuePair)
+            static KeyValuePair<TKey, TValue> Convert(KeyValuePair<byte[], byte[]> fieldValuePair)
             {
                 TKey key = BsonConvert.DeserializeObject<TKey>(fieldValuePair.Key);
                 TValue value = BsonConvert.DeserializeObject<TValue>(fieldValuePair.Value);
@@ -343,7 +345,9 @@ namespace Biscuits.Collections.Redis
         public bool Remove(TKey key)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             return _client.HDel(_key, new[] { fieldBytes }) != 0L;
@@ -352,7 +356,9 @@ namespace Biscuits.Collections.Redis
         public async Task<bool> RemoveAsync(TKey key)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             return await _client.HDelAsync(_key, new[] { fieldBytes }) != 0L;
@@ -370,12 +376,17 @@ namespace Biscuits.Collections.Redis
 
         public bool TryGetValue(TKey key, out TValue value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             byte[] valueBytes = _client.HGet(_key, fieldBytes);
 
             if (valueBytes == null)
             {
-                value = default(TValue);
+                value = default;
                 return false;
             }
 
@@ -386,13 +397,17 @@ namespace Biscuits.Collections.Redis
         public async Task<(bool, TValue)> TryGetValueAsync(TKey key)
         {
             if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
+            }
 
             byte[] fieldBytes = BsonConvert.SerializeObject(key);
             byte[] valueBytes = await _client.HGetAsync(_key, fieldBytes);
-            
+
             if (valueBytes == null)
-                return (false, default(TValue));
+            {
+                return (false, default);
+            }
 
             TValue value = BsonConvert.DeserializeObject<TValue>(valueBytes);
             return (true, value);

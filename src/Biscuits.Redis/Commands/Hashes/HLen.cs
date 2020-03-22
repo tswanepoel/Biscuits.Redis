@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Hashes
 {
     internal sealed class HLen : IntegerValueCommand
     {
-        readonly byte[] _key;
+        private readonly byte[] _key;
 
         public HLen(Stream stream, byte[] key)
             : base(stream, "HLEN")

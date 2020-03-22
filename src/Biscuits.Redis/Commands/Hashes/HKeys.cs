@@ -6,7 +6,7 @@ namespace Biscuits.Redis.Commands.Hashes
 {
     internal sealed class HKeys : ArrayOfBulkStringValueCommand
     {
-        readonly byte[] _key;
+        private readonly byte[] _key;
 
         public HKeys(Stream stream, byte[] key)
             : base(stream, "HKEYS")

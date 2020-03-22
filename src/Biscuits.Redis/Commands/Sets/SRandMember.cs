@@ -6,8 +6,8 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SRandMember : ArrayOfBulkStringValueCommand
     {
-        readonly byte[] _key;
-        readonly long _count;
+        private readonly byte[] _key;
+        private readonly long _count;
 
         public SRandMember(Stream stream, byte[] key, long count)
             : base(stream, "SRANDMEMBER")

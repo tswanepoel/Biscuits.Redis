@@ -9,9 +9,9 @@ namespace Biscuits.Collections.Redis
 {
     public class RedisList<T> : IList<T>, IReadOnlyList<T>
     {
-        readonly RedisClient _client;
-        readonly byte[] _key;
-        readonly IEqualityComparer<T> _comparer;
+        private readonly RedisClient _client;
+        private readonly byte[] _key;
+        private readonly IEqualityComparer<T> _comparer;
 
         public RedisList(RedisClient client, byte[] key)
             : this(client, key, EqualityComparer<T>.Default)
@@ -27,8 +27,8 @@ namespace Biscuits.Collections.Redis
         
         public T this[int index]
         {
-            get { return Get(index); }
-            set { Insert(index, value); }
+            get => Get(index);
+            set => Insert(index, value);
         }
 
         public T Get(long index)
@@ -63,10 +63,7 @@ namespace Biscuits.Collections.Redis
             return BsonConvert.DeserializeObject<T>(value);
         }
 
-        public int Count
-        {
-            get{ return (int)GetCount(); }
-        }
+        public int Count { get => (int)GetCount(); }
 
         public long GetCount()
         {
@@ -78,10 +75,7 @@ namespace Biscuits.Collections.Redis
             return await _client.LLenAsync(_key);
         }
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly { get => false; }
 
         public void Add(T item)
         {
@@ -98,7 +92,9 @@ namespace Biscuits.Collections.Redis
         public void AddRange(IEnumerable<T> items)
         {
             if (items == null)
+            {
                 throw new ArgumentNullException(nameof(items));
+            }
 
             var values = new List<byte[]>();
 
@@ -114,7 +110,9 @@ namespace Biscuits.Collections.Redis
         public async Task AddRangeAsync(IEnumerable<T> items)
         {
             if (items == null)
+            {
                 throw new ArgumentNullException(nameof(items));
+            }
 
             var values = new List<byte[]>();
 
@@ -145,13 +143,19 @@ namespace Biscuits.Collections.Redis
         public void CopyTo(T[] array, int index)
         {
             if (array == null)
+            {
                 throw new ArgumentNullException(nameof(array));
+            }
 
             if (index < 0 || index > array.Length)
+            {
                 throw new ArgumentOutOfRangeException(nameof(index));
+            }
 
             if (array.Length - index < Count)
+            {
                 throw new ArgumentException("Destination array is not long enough.", nameof(array));
+            }
 
             foreach (T item in this)
             {
@@ -171,7 +175,9 @@ namespace Biscuits.Collections.Redis
             foreach (T element in this)
             {
                 if (_comparer.Equals(element, item))
+                {
                     return index;
+                }
 
                 index++;
             }
@@ -265,7 +271,7 @@ namespace Biscuits.Collections.Redis
 
         public IList<T> GetAll()
         {
-            IList<byte[]> values = _client.LRange(_key, 0, long.MaxValue);
+            IList<byte[]> values = _client.LRange(_key, 0L, long.MaxValue);
             var items = new List<T>(values.Count);
 
             foreach (byte[] value in values)
@@ -279,7 +285,7 @@ namespace Biscuits.Collections.Redis
 
         public async Task<IList<T>> GetAllAsync()
         {
-            IList<byte[]> values = await _client.LRangeAsync(_key, 0, long.MaxValue);
+            IList<byte[]> values = await _client.LRangeAsync(_key, 0L, long.MaxValue);
             var items = new List<T>(values.Count);
 
             foreach (byte[] value in values)

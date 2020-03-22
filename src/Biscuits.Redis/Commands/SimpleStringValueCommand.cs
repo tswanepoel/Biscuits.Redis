@@ -1,7 +1,7 @@
 ﻿using Biscuits.Redis.Resp;
 using System.IO;
 
-namespace Biscuits.Redis
+namespace Biscuits.Redis.Commands
 {
     internal abstract class SimpleStringValueCommand : Command<string>
     {
@@ -21,7 +21,9 @@ namespace Biscuits.Redis
             }
 
             if (dataType != RespDataType.SimpleString)
+            {
                 throw new InvalidDataException();
+            }
 
             string value = reader.ReadSimpleStringValue();
             return CommandResult.Success(value);

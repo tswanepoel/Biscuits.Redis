@@ -7,8 +7,8 @@ namespace Biscuits.Redis.Commands.Hashes
 {
     internal sealed class HMSet : SimpleStringValueCommand
     {
-        readonly byte[] _key;
-        readonly IEnumerable<byte[]> _fieldsAndValues;
+        private readonly byte[] _key;
+        private readonly IEnumerable<byte[]> _fieldsAndValues;
 
         public HMSet(Stream stream, byte[] key, IEnumerable<byte[]> fieldsAndValues)
             : base(stream, "HSET")
@@ -21,7 +21,7 @@ namespace Biscuits.Redis.Commands.Hashes
         {
             writer.WriteBulkString(_key);
 
-            foreach (byte[] fieldOrValue in _fieldsAndValues)
+            foreach (var fieldOrValue in _fieldsAndValues)
             {
                 writer.WriteBulkString(fieldOrValue);
             }
@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands.Hashes
         {
             await writer.WriteBulkStringAsync(_key);
 
-            foreach (byte[] fieldOrValue in _fieldsAndValues)
+            foreach (var fieldOrValue in _fieldsAndValues)
             {
                 await writer.WriteBulkStringAsync(fieldOrValue);
             }

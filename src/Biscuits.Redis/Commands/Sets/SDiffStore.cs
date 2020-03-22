@@ -7,7 +7,7 @@ namespace Biscuits.Redis.Commands.Sets
 {
     internal sealed class SDiffStore : IntegerValueCommand
     {
-        readonly IEnumerable<byte[]> _keys;
+        private readonly IEnumerable<byte[]> _keys;
 
         public SDiffStore(Stream stream, IEnumerable<byte[]> keys)
             : base(stream, "SDIFFSTORE")
@@ -17,7 +17,7 @@ namespace Biscuits.Redis.Commands.Sets
 
         protected override void WriteParameters(IRespWriter writer)
         {
-            foreach (byte[] key in _keys)
+            foreach (var key in _keys)
             {
                 writer.WriteBulkString(key);
             }
@@ -25,7 +25,7 @@ namespace Biscuits.Redis.Commands.Sets
 
         protected override async Task WriteParametersAsync(IAsyncRespWriter writer)
         {
-            foreach (byte[] key in _keys)
+            foreach (var key in _keys)
             {
                 await writer.WriteBulkStringAsync(key);
             }
