@@ -11,7 +11,7 @@ namespace Biscuits.Redis.Commands.Hashes
         private readonly long _value;
 
         public HIncrBy(Stream stream, byte[] key, byte[] field, long value)
-            : base(stream, "HSET")
+            : base(stream, "HINCRBY")
         {
             _key = key;
             _field = field;

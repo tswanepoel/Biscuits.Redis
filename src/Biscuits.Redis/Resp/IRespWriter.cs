@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Biscuits.Redis.Resp
+﻿namespace Biscuits.Redis.Resp
 {
     public interface IRespWriter
     {

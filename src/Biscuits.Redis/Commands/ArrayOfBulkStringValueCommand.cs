@@ -31,7 +31,7 @@ namespace Biscuits.Redis.Commands
                 return CommandResult<IList<byte[]>>.Success(null);
             }
 
-            var values = new List<byte[]>();
+            var values = new byte[length][];
 
             for (var i = 0; i < length; i++)
             {
@@ -42,8 +42,7 @@ namespace Biscuits.Redis.Commands
                     throw new InvalidDataException();
                 }
 
-                byte[] value = reader.ReadBulkStringValue();
-                values.Add(value);
+                values[i] = reader.ReadBulkStringValue();
             }
 
             return CommandResult.Success((IList<byte[]>)values);

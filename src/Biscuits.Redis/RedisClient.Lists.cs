@@ -19,15 +19,8 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = LIndex(keyBytes, index);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = LIndexCore(_encoding.GetBytes(key), index);
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public byte[] LIndex(byte[] key, long index)
@@ -39,15 +32,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LIndex(connection.GetStream(), key, index);
-
-            return command.Execute();
+            return LIndexCore(key, index);
         }
 
         public async Task<string> LIndexAsync(string key, long index)
@@ -58,16 +43,9 @@ namespace Biscuits.Redis
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = await LIndexAsync(keyBytes, index);
 
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = await LIndexCoreAsync(_encoding.GetBytes(key), index);
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public async Task<byte[]> LIndexAsync(byte[] key, long index)
@@ -79,11 +57,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LIndexCoreAsync(key, index);
+        }
 
+        private byte[] LIndexCore(byte[] key, long index)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LIndex(connection.GetStream(), key, index);
+
+            return command.Execute();
+        }
+
+        private async Task<byte[]> LIndexCoreAsync(byte[] key, long index)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LIndex(connection.GetStream(), key, index);
 
@@ -103,21 +89,10 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (before == null)
-            {
-                throw new ArgumentNullException(nameof(before));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] beforeBytes = _encoding.GetBytes(before);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return LInsertBefore(keyBytes, beforeBytes, valueBytes);
+            return LInsertBeforeCore(
+                _encoding.GetBytes(key),
+                before != null ? _encoding.GetBytes(before) : null,
+                value != null ? _encoding.GetBytes(value) : null);
         }
 
         public long LInsertBefore(byte[] key, byte[] before, byte[] value)
@@ -129,25 +104,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (before == null)
-            {
-                throw new ArgumentNullException(nameof(before));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-            
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LInsertBefore(connection.GetStream(), key, before, value);
-
-            return command.Execute();
+            return LInsertBeforeCore(key, before, value);
         }
 
         public async Task<long> LInsertBeforeAsync(string key, string before, string value)
@@ -159,21 +116,10 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (before == null)
-            {
-                throw new ArgumentNullException(nameof(before));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] beforeBytes = _encoding.GetBytes(before);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return await LInsertBeforeAsync(keyBytes, beforeBytes, valueBytes);
+            return await LInsertBeforeCoreAsync(
+                _encoding.GetBytes(key), 
+                before != null ? _encoding.GetBytes(before) : null, 
+                value != null ? _encoding.GetBytes(value) : null);
         }
 
         public async Task<long> LInsertBeforeAsync(byte[] key, byte[] before, byte[] value)
@@ -185,21 +131,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LInsertBeforeCoreAsync(key, before, value);
+        }
 
-            if (before == null)
-            {
-                throw new ArgumentNullException(nameof(before));
-            }
+        private long LInsertBeforeCore(byte[] key, byte[] before, byte[] value)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LInsertBefore(connection.GetStream(), key, before, value);
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            return command.Execute();
+        }
 
+        private async Task<long> LInsertBeforeCoreAsync(byte[] key, byte[] before, byte[] value)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LInsertBefore(connection.GetStream(), key, before, value);
 
@@ -219,21 +163,10 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (after == null)
-            {
-                throw new ArgumentNullException(nameof(after));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] afterBytes = _encoding.GetBytes(after);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return LInsertAfter(keyBytes, afterBytes, valueBytes);
+            return LInsertAfterCore(
+                _encoding.GetBytes(key),
+                after != null ? _encoding.GetBytes(after) : null,
+                value != null ? _encoding.GetBytes(value) : null);
         }
 
         public long LInsertAfter(byte[] key, byte[] after, byte[] value)
@@ -245,25 +178,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (after == null)
-            {
-                throw new ArgumentNullException(nameof(after));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LInsertAfter(connection.GetStream(), key, after, value);
-
-            return command.Execute();
+            return LInsertAfterCore(key, after, value);
         }
 
         public async Task<long> LInsertAfterAsync(string key, string after, string value)
@@ -275,21 +190,10 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (after == null)
-            {
-                throw new ArgumentNullException(nameof(after));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] afterBytes = _encoding.GetBytes(after);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return await LInsertAfterAsync(keyBytes, afterBytes, valueBytes);
+            return await LInsertAfterCoreAsync(
+                _encoding.GetBytes(key),
+               after != null ? _encoding.GetBytes(after) : null,
+               value != null ? _encoding.GetBytes(value) : null);
         }
 
         public async Task<long> LInsertAfterAsync(byte[] key, byte[] after, byte[] value)
@@ -301,21 +205,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LInsertAfterCoreAsync(key, after, value);
+        }
 
-            if (after == null)
-            {
-                throw new ArgumentNullException(nameof(after));
-            }
+        private long LInsertAfterCore(byte[] key, byte[] after, byte[] value)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LInsertAfter(connection.GetStream(), key, after, value);
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            return command.Execute();
+        }
 
+        private async Task<long> LInsertAfterCoreAsync(byte[] key, byte[] after, byte[] value)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LInsertAfter(connection.GetStream(), key, after, value);
 
@@ -335,8 +237,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            return LLen(keyBytes);
+            return LLenCore(_encoding.GetBytes(key));
         }
 
         public long LLen(byte[] key)
@@ -348,15 +249,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LLen(connection.GetStream(), key);
-
-            return command.Execute();
+            return LLenCore(key);
         }
 
         public async Task<long> LLenAsync(string key)
@@ -368,8 +261,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            return await LLenAsync(keyBytes);
+            return await LLenCoreAsync(_encoding.GetBytes(key));
         }
 
         public async Task<long> LLenAsync(byte[] key)
@@ -381,11 +273,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LLenCoreAsync(key);
+        }
 
+        private long LLenCore(byte[] key)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LLen(connection.GetStream(), key);
+
+            return command.Execute();
+        }
+
+        private async Task<long> LLenCoreAsync(byte[] key)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LLen(connection.GetStream(), key);
 
@@ -405,33 +305,20 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = LPop(keyBytes);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = LPopCore(_encoding.GetBytes(key));
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public byte[] LPop(byte[] key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LPop(connection.GetStream(), key);
-
-            return command.Execute();
+            return LPopCore(key);
         }
 
         public async Task<string> LPopAsync(string key)
@@ -443,29 +330,32 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = await LPopAsync(keyBytes);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = await LPopCoreAsync(_encoding.GetBytes(key));
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public async Task<byte[]> LPopAsync(byte[] key)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LPopCoreAsync(key);
+        }
 
+        private byte[] LPopCore(byte[] key)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LPop(connection.GetStream(), key);
+
+            return command.Execute();
+        }
+
+        private async Task<byte[]> LPopCoreAsync(byte[] key)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LPop(connection.GetStream(), key);
 
@@ -476,37 +366,26 @@ namespace Biscuits.Redis
 
         #region LPush
 
-        public long LPush(string key, params string[] values)
+        public long LPush(string key, string value, params string[] moreValues)
         {
             ValidateNotDisposed();
 
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesBytes = new List<byte[]>(values.Length);
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (values[i] == null)
-                {
-                    throw new ArgumentException(nameof(values));
-                }
-
-                valuesBytes.Add(_encoding.GetBytes(values[i]));
             }
 
             byte[] keyBytes = _encoding.GetBytes(key);
-            return LPush(keyBytes, valuesBytes);
+
+            if (moreValues == null)
+            {
+                return LPushCore(keyBytes, new[] { value != null ? _encoding.GetBytes(value) : null });
+            }
+
+            return LPushCore(keyBytes, moreValues.Prepend(value).Select(x => x != null ? _encoding.GetBytes(x) : null));
         }
 
-        public long LPush(byte[] key, ICollection<byte[]> values)
+        public long LPush(string key, IEnumerable<string> values)
         {
             ValidateNotDisposed();
 
@@ -515,9 +394,38 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
+            if (values == null)
             {
-                throw new ArgumentException(nameof(key));
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            return LPushCore(_encoding.GetBytes(key), values.Select(x => x != null ? _encoding.GetBytes(x) : null));
+        }
+
+        public long LPush(byte[] key, byte[] value, params byte[][] moreValues)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (moreValues == null)
+            {
+                return LPushCore(key, new[] { value });
+            }
+
+            return LPushCore(key, moreValues.Prepend(value));
+        }
+
+        public long LPush(byte[] key, IEnumerable<byte[]> values)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
             }
 
             if (values == null)
@@ -525,81 +433,89 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (values.Count == 0)
+            return LPushCore(key, values);
+        }
+
+        public async Task<long> LPushAsync(string key, string value, params string[] moreValues)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
             {
-                throw new ArgumentException(nameof(values));
+                throw new ArgumentNullException(nameof(key));
             }
 
-            if (values.Any(x => x == null))
+            byte[] keyBytes = _encoding.GetBytes(key);
+
+            if (moreValues == null)
             {
-                throw new ArgumentException(nameof(values));
+                return await LPushCoreAsync(keyBytes, new[] { value != null ? _encoding.GetBytes(value) : null });
             }
 
+            return await LPushCoreAsync(keyBytes, moreValues.Prepend(value).Select(x => x != null ? _encoding.GetBytes(x) : null));
+        }
+
+        public async Task<long> LPushAsync(string key, IEnumerable<string> values)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            return await LPushCoreAsync(_encoding.GetBytes(key), values.Select(x => x != null ? _encoding.GetBytes(x) : null));
+        }
+
+        public async Task<long> LPushAsync(byte[] key, byte[] value, params byte[][] moreValues)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (moreValues == null)
+            {
+                return await LPushCoreAsync(key, new[] { value });
+            }
+
+            return await LPushCoreAsync(key, moreValues.Prepend(value));
+        }
+
+        public async Task<long> LPushAsync(byte[] key, IEnumerable<byte[]> values)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            return await LPushCoreAsync(key, values);
+        }
+
+        private long LPushCore(byte[] key, IEnumerable<byte[]> values)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LPush(connection.GetStream(), key, values);
 
             return command.Execute();
         }
 
-        public async Task<long> LPushAsync(string key, params string[] values)
+        private async Task<long> LPushCoreAsync(byte[] key, IEnumerable<byte[]> values)
         {
-            ValidateNotDisposed();
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesBytes = new List<byte[]>(values.Length);
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (values[i] == null)
-                {
-                    throw new ArgumentException(nameof(values));
-                }
-
-                valuesBytes.Add(_encoding.GetBytes(values[i]));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            return await LPushAsync(keyBytes, valuesBytes);
-        }
-
-        public async Task<long> LPushAsync(byte[] key, ICollection<byte[]> values)
-        {
-            ValidateNotDisposed();
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            if (values.Count == 0)
-            {
-                throw new ArgumentException(nameof(values));
-            }
-
-            if (values.Any(x => x == null))
-            {
-                throw new ArgumentException(nameof(values));
-            }
-
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LPush(connection.GetStream(), key, values);
 
@@ -619,15 +535,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return LPushX(keyBytes, valueBytes);
+            return LPushXCore(_encoding.GetBytes(key), value != null ? _encoding.GetBytes(value) : null);
         }
 
         public long LPushX(byte[] key, byte[] value)
@@ -639,20 +547,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LPushX(connection.GetStream(), key, value);
-
-            return command.Execute();
+            return LPushXCore(key, value);
         }
 
         public async Task<long> LPushXAsync(string key, string value)
@@ -664,15 +559,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return await LPushXAsync(keyBytes, valueBytes);
+            return await LPushXCoreAsync(_encoding.GetBytes(key), value != null ? _encoding.GetBytes(value) : null);
         }
 
         public async Task<long> LPushXAsync(byte[] key, byte[] value)
@@ -684,16 +571,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LPushXCoreAsync(key, value);
+        }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+        private long LPushXCore(byte[] key, byte[] value)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LPushX(connection.GetStream(), key, value);
 
+            return command.Execute();
+        }
+
+        private async Task<long> LPushXCoreAsync(byte[] key, byte[] value)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LPushX(connection.GetStream(), key, value);
 
@@ -713,15 +603,12 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            IList<byte[]> valuesBytes = LRange(keyBytes, start, stop);
+            IList<byte[]> valuesBytes = LRangeCore(_encoding.GetBytes(key), start, stop);
+            var values = new string[valuesBytes.Count];
 
-            var values = new List<string>(valuesBytes.Count);
-
-            for (var i = 0; i < valuesBytes.Count; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                string value = _encoding.GetString(valuesBytes[i]);
-                values.Add(value);
+                values[i] = valuesBytes[i] != null ? _encoding.GetString(valuesBytes[i]) : null;
             }
 
             return values;
@@ -736,15 +623,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LRange(connection.GetStream(), key, start, stop);
-
-            return command.Execute();
+            return LRangeCore(key, start, stop);
         }
 
         public async Task<IList<string>> LRangeAsync(string key, long start, long stop)
@@ -756,15 +635,12 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            IList<byte[]> valuesBytes = await LRangeAsync(keyBytes, start, stop);
+            IList<byte[]> valuesBytes = await LRangeCoreAsync(_encoding.GetBytes(key), start, stop);
+            var values = new string[valuesBytes.Count];
 
-            var values = new List<string>(valuesBytes.Count);
-
-            for (var i = 0; i < valuesBytes.Count; i++)
+            for (var i = 0; i < values.Length; i++)
             {
-                string value = _encoding.GetString(valuesBytes[i]);
-                values.Add(value);
+                values[i] = valuesBytes[i] != null ? _encoding.GetString(valuesBytes[i]) : null;
             }
 
             return values;
@@ -779,11 +655,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LRangeCoreAsync(key, start, stop);
+        }
 
+        private IList<byte[]> LRangeCore(byte[] key, long start, long stop)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LRange(connection.GetStream(), key, start, stop);
+
+            return command.Execute();
+        }
+
+        private async Task<IList<byte[]>> LRangeCoreAsync(byte[] key, long start, long stop)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LRange(connection.GetStream(), key, start, stop);
 
@@ -803,15 +687,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return LRem(keyBytes, count, valueBytes);
+            return LRemCore(_encoding.GetBytes(key), count, value != null ? _encoding.GetBytes(value) : null);
         }
 
         public long LRem(byte[] key, long count, byte[] value)
@@ -823,20 +699,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LRem(connection.GetStream(), key, count, value);
-
-            return command.Execute();
+            return LRemCore(key, count, value);
         }
 
         public async Task<long> LRemAsync(string key, long count, string value)
@@ -848,15 +711,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return await LRemAsync(keyBytes, count, valueBytes);
+            return await LRemCoreAsync(_encoding.GetBytes(key), count, value != null ? _encoding.GetBytes(value) : null);
         }
 
         public async Task<long> LRemAsync(byte[] key, long count, byte[] value)
@@ -868,16 +723,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LRemCoreAsync(key, count, value);
+        }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+        private long LRemCore(byte[] key, long count, byte[] value)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LRem(connection.GetStream(), key, count, value);
 
+            return command.Execute();
+        }
+
+        private async Task<long> LRemCoreAsync(byte[] key, long count, byte[] value)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LRem(connection.GetStream(), key, count, value);
 
@@ -897,15 +755,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return LSet(keyBytes, index, valueBytes);
+            return LSetCore(_encoding.GetBytes(key), index, value != null ? _encoding.GetBytes(value) : null);
         }
 
         public string LSet(byte[] key, long index, byte[] value)
@@ -917,20 +767,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LSet(connection.GetStream(), key, index, value);
-
-            return command.Execute();
+            return LSetCore(key, index, value);
         }
 
         public async Task<string> LSetAsync(string key, long index, string value)
@@ -942,15 +779,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return await LSetAsync(keyBytes, index, valueBytes);
+            return await LSetCoreAsync(_encoding.GetBytes(key), index, value != null ? _encoding.GetBytes(value) : null);
         }
 
         public async Task<string> LSetAsync(byte[] key, long index, byte[] value)
@@ -962,16 +791,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LSetCoreAsync(key, index, value);
+        }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+        private string LSetCore(byte[] key, long index, byte[] value)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LSet(connection.GetStream(), key, index, value);
 
+            return command.Execute();
+        }
+
+        private async Task<string> LSetCoreAsync(byte[] key, long index, byte[] value)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LSet(connection.GetStream(), key, index, value);
 
@@ -991,26 +823,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            return LTrim(keyBytes, start, stop);
+            return LTrimCore(_encoding.GetBytes(key), start, stop);
         }
 
         public string LTrim(byte[] key, long start, long stop)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new LTrim(connection.GetStream(), key, start, stop);
-
-            return command.Execute();
+            return LTrimCore(key, start, stop);
         }
 
         public async Task<string> LTrimAsync(string key, long start, long stop)
@@ -1022,22 +847,31 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            return await LTrimAsync(keyBytes, start, stop);
+            return await LTrimCoreAsync(_encoding.GetBytes(key), start, stop);
         }
 
         public async Task<string> LTrimAsync(byte[] key, long start, long stop)
         {
+            ValidateNotDisposed();
+
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await LTrimCoreAsync(key, start, stop);
+        }
 
+        private string LTrimCore(byte[] key, long start, long stop)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new LTrim(connection.GetStream(), key, start, stop);
+
+            return command.Execute();
+        }
+
+        private async Task<string> LTrimCoreAsync(byte[] key, long start, long stop)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new LTrim(connection.GetStream(), key, start, stop);
 
@@ -1057,15 +891,8 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = RPop(keyBytes);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = RPopCore(_encoding.GetBytes(key));
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public byte[] RPop(byte[] key)
@@ -1077,15 +904,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new RPop(connection.GetStream(), key);
-
-            return command.Execute();
+            return RPopCore(key);
         }
 
         public async Task<string> RPopAsync(string key)
@@ -1097,15 +916,8 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = await RPopAsync(keyBytes);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = await RPopCoreAsync(_encoding.GetBytes(key));
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public async Task<byte[]> RPopAsync(byte[] key)
@@ -1117,11 +929,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await RPopCoreAsync(key);
+        }
 
+        private byte[] RPopCore(byte[] key)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new RPop(connection.GetStream(), key);
+
+            return command.Execute();
+        }
+
+        private async Task<byte[]> RPopCoreAsync(byte[] key)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new RPop(connection.GetStream(), key);
 
@@ -1132,37 +952,26 @@ namespace Biscuits.Redis
 
         #region RPush
 
-        public long RPush(string key, params string[] values)
+        public long RPush(string key, string value, params string[] moreValues)
         {
             ValidateNotDisposed();
 
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesBytes = new List<byte[]>(values.Length);
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (values[i] == null)
-                {
-                    throw new ArgumentException(nameof(values));
-                }
-
-                valuesBytes.Add(_encoding.GetBytes(values[i]));
             }
 
             byte[] keyBytes = _encoding.GetBytes(key);
-            return RPush(keyBytes, valuesBytes);
+
+            if (moreValues == null)
+            {
+                return RPushCore(keyBytes, new[] { value != null ? _encoding.GetBytes(value) : null });
+            }
+
+            return RPushCore(keyBytes, moreValues.Prepend(value).Select(x => x != null ? _encoding.GetBytes(x) : null));
         }
 
-        public long RPush(byte[] key, IList<byte[]> values)
+        public long RPush(string key, IEnumerable<string> values)
         {
             ValidateNotDisposed();
 
@@ -1171,9 +980,38 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
+            if (values == null)
             {
-                throw new ArgumentException(nameof(key));
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            return RPushCore(_encoding.GetBytes(key), values.Select(x => x != null ? _encoding.GetBytes(x) : null));
+        }
+
+        public long RPush(byte[] key, byte[] value, params byte[][] moreValues)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (moreValues == null)
+            {
+                return RPushCore(key, new[] { value });
+            }
+
+            return RPushCore(key, moreValues.Prepend(value));
+        }
+
+        public long RPush(byte[] key, IEnumerable<byte[]> values)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
             }
 
             if (values == null)
@@ -1181,81 +1019,89 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (values.Count == 0)
+            return RPushCore(key, values);
+        }
+
+        public async Task<long> RPushAsync(string key, string value, params string[] moreValues)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
             {
-                throw new ArgumentException(nameof(values));
+                throw new ArgumentNullException(nameof(key));
             }
 
-            if (values.Any(x => x == null))
+            byte[] keyBytes = _encoding.GetBytes(key);
+
+            if (moreValues == null)
             {
-                throw new ArgumentException(nameof(values));
+                return await RPushCoreAsync(keyBytes, new[] { value != null ? _encoding.GetBytes(value) : null });
             }
 
+            return await RPushCoreAsync(keyBytes, moreValues.Prepend(value).Select(x => x != null ? _encoding.GetBytes(x) : null));
+        }
+
+        public async Task<long> RPushAsync(string key, IEnumerable<string> values)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            return await RPushCoreAsync(_encoding.GetBytes(key), values.Select(x => x != null ? _encoding.GetBytes(x) : null));
+        }
+
+        public async Task<long> RPushAsync(byte[] key, byte[] value, params byte[][] moreValues)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (moreValues == null)
+            {
+                return await RPushCoreAsync(key, new[] { value });
+            }
+
+            return await RPushCoreAsync(key, moreValues.Prepend(value));
+        }
+
+        public async Task<long> RPushAsync(byte[] key, IEnumerable<byte[]> values)
+        {
+            ValidateNotDisposed();
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            return await RPushCoreAsync(key, values);
+        }
+
+        private long RPushCore(byte[] key, IEnumerable<byte[]> values)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new RPush(connection.GetStream(), key, values);
 
             return command.Execute();
         }
 
-        public async Task<long> RPushAsync(string key, params string[] values)
+        private async Task<long> RPushCoreAsync(byte[] key, IEnumerable<byte[]> values)
         {
-            ValidateNotDisposed();
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesBytes = new List<byte[]>(values.Length);
-
-            for (var i = 0; i < values.Length; i++)
-            {
-                if (values[i] == null)
-                {
-                    throw new ArgumentException(nameof(values));
-                }
-
-                valuesBytes.Add(_encoding.GetBytes(values[i]));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            return await RPushAsync(keyBytes, valuesBytes);
-        }
-
-        public async Task<long> RPushAsync(byte[] key, IList<byte[]> values)
-        {
-            ValidateNotDisposed();
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            if (values.Count == 0)
-            {
-                throw new ArgumentException(nameof(values));
-            }
-
-            if (values.Any(x => x == null))
-            {
-                throw new ArgumentException(nameof(values));
-            }
-
             using var connection = new RedisConnection(_connectionSettings);
             var command = new RPush(connection.GetStream(), key, values);
 
@@ -1275,15 +1121,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return RPushX(keyBytes, valueBytes);
+            return RPushXCore(_encoding.GetBytes(key), value != null ? _encoding.GetBytes(value) : null);
         }
 
         public long RPushX(byte[] key, byte[] value)
@@ -1295,20 +1133,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new RPushX(connection.GetStream(), key, value);
-
-            return command.Execute();
+            return RPushXCore(key, value);
         }
 
         public async Task<long> RPushXAsync(string key, string value)
@@ -1320,15 +1145,7 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            byte[] keyBytes = _encoding.GetBytes(key);
-            byte[] valueBytes = _encoding.GetBytes(value);
-
-            return await RPushXAsync(keyBytes, valueBytes);
+            return await RPushXCoreAsync(_encoding.GetBytes(key), value != null ? _encoding.GetBytes(value) : null);
         }
 
         public async Task<long> RPushXAsync(byte[] key, byte[] value)
@@ -1340,16 +1157,19 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (key.Length == 0)
-            {
-                throw new ArgumentException(nameof(key));
-            }
+            return await RPushXCoreAsync(key, value);
+        }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+        private long RPushXCore(byte[] key, byte[] value)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new RPushX(connection.GetStream(), key, value);
 
+            return command.Execute();
+        }
+
+        private async Task<long> RPushXCoreAsync(byte[] key, byte[] value)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new RPushX(connection.GetStream(), key, value);
 
@@ -1374,16 +1194,8 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            byte[] sourceBytes = _encoding.GetBytes(source);
-            byte[] destinationBytes = _encoding.GetBytes(destination);
-            byte[] valueBytes = RPopLPush(sourceBytes, destinationBytes);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = RPopLPushCore(_encoding.GetBytes(source), _encoding.GetBytes(destination));
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public byte[] RPopLPush(byte[] source, byte[] destination)
@@ -1395,25 +1207,12 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (source.Length == 0)
-            {
-                throw new ArgumentException(nameof(source));
-            }
-
             if (destination == null)
             {
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            if (destination.Length == 0)
-            {
-                throw new ArgumentException(nameof(destination));
-            }
-
-            using var connection = new RedisConnection(_connectionSettings);
-            var command = new RPopLPush(connection.GetStream(), source, destination);
-
-            return command.Execute();
+            return RPopLPushCore(source, destination);
         }
 
         public async Task<string> RPopLPushAsync(string source, string destination)
@@ -1430,16 +1229,8 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            byte[] sourceBytes = _encoding.GetBytes(source);
-            byte[] destinationBytes = _encoding.GetBytes(destination);
-            byte[] valueBytes = await RPopLPushAsync(sourceBytes, destinationBytes);
-
-            if (valueBytes == null)
-            {
-                return null;
-            }
-
-            return _encoding.GetString(valueBytes);
+            byte[] valueBytes = await RPopLPushCoreAsync(_encoding.GetBytes(source), _encoding.GetBytes(destination));
+            return valueBytes != null ? _encoding.GetString(valueBytes) : null;
         }
 
         public async Task<byte[]> RPopLPushAsync(byte[] source, byte[] destination)
@@ -1451,21 +1242,24 @@ namespace Biscuits.Redis
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (source.Length == 0)
-            {
-                throw new ArgumentException(nameof(source));
-            }
-
             if (destination == null)
             {
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            if (destination.Length == 0)
-            {
-                throw new ArgumentException(nameof(destination));
-            }
+            return await RPopLPushCoreAsync(source, destination);
+        }
 
+        private byte[] RPopLPushCore(byte[] source, byte[] destination)
+        {
+            using var connection = new RedisConnection(_connectionSettings);
+            var command = new RPopLPush(connection.GetStream(), source, destination);
+
+            return command.Execute();
+        }
+
+        private async Task<byte[]> RPopLPushCoreAsync(byte[] source, byte[] destination)
+        {
             using var connection = new RedisConnection(_connectionSettings);
             var command = new RPopLPush(connection.GetStream(), source, destination);
 
