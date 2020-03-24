@@ -253,15 +253,15 @@ namespace Biscuits.Redis.Resp
                 ReadState = ReadState.DataType;
                 return null;
             }
-
+            
             if (length > int.MaxValue)
             {
                 throw new NotSupportedException();
             }
-
+            
             byte[] bytes = await ReadBytesAsync((int)length);
-            ReadByte();
-            ReadByte();
+            await ReadByteAsync();
+            await ReadByteAsync();
             _currentLength--;
 
             ReadState = ReadState.DataType;
