@@ -14,6 +14,5 @@ namespace Biscuits.Redis.Resp
         Task WriteBulkStringAsync(string value);
         Task WriteBulkStringAsync(byte[] bytes);
         Task FlushAsync();
-        void Close();
     }
 }

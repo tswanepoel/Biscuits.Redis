@@ -5,7 +5,6 @@
         Initial = 1,
         DataType = 2,
         Array = 3,
-        Value = 4,
-        Closed = 5
+        Value = 4
     }
 }
